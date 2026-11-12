@@ -1163,7 +1163,7 @@ function authHtml(){
   const steps={phone:1,otp:2,id:3,profile:4};
   const head=(t,sub)=>`<div class="muted">${steps[AUTH.step]}/4 단계</div><h2 class="title">${t}</h2><p class="muted" style="margin-bottom:6px">${sub}</p>`;
   if(AUTH.step==='phone')return `${head('휴대폰 번호로 시작하기','이미 가입한 번호면 바로 로그인됩니다.')}
-    ${(()=>{const rl=recentLogins();return rl.length?`<div class="field"><label>최근 로그인한 번호</label><div class="chip-row" style="flex-wrap:wrap">${rl.map(ph=>`<button type="button" class="chip" data-a="auth-recent" data-p="${ph}">📱 ${maskPhone(ph)}</button>`).join('')}</div></div>`:'';})()}
+    ${(()=>{const rl=recentLogins().filter(ph=>S.users.some(x=>x.phone===ph&&!x.deleted));return rl.length?`<div class="field"><label>최근 로그인한 번호</label><div class="chip-row" style="flex-wrap:wrap">${rl.map(ph=>`<button type="button" class="chip" data-a="auth-recent" data-p="${ph}">📱 ${maskPhone(ph)}</button>`).join('')}</div></div>`:'';})()}
     ${fld('휴대폰 번호',inp('phone',{mode:'numeric',ph:'010-1234-5678',fmt:'phone',max:13,ac:'tel',enter:'auth-phone'}))}
     <div class="notice info">• 처음이면 인증 후 가입합니다.<br>• 인증번호는 화면에 표시되며, 실제 문자·결제는 없습니다.</div>${err}
     <button class="btn primary block" data-a="auth-phone">시작하기</button>`;
