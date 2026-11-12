@@ -532,6 +532,8 @@ const MARKET_EMOJI=['🍚','🌾','🥚','🥩','🍗','🐟','🦐','🥬','�
 const DINING_EMOJI=['🍲','🍚','🍳','🥘','🍛','🍜','🍝','🍕','🌮','🥗','🐟','🍖','🥔','🍠','🥞','🍰','🍪','☕','🍽️'];
 const PAY_METHODS=['카카오페이','토스페이','신용·체크카드'];
 const STAGES=['모집중','목표 달성','발주 완료','소분 픽업'];
+/* 1인 1계정 확인은 이 시점(2026-11-12 15:30 KST) 이후에 만든 계정끼리만 적용해요. 그 전 테스트 계정은 막지 않아요 */
+const DI_CUTOFF=Date.UTC(2026,10,12,6,30);
 const REJOIN_DAYS=30, REJOIN_DAYS_SANCTION=180, AUTO_RESTRICT_REPORTS=3, AGE_MIN=14;
 
 const TYPES={
@@ -854,9 +856,9 @@ const Srv={
     if(!/^[\p{L}][\p{L}\p{M} .'·-]{0,38}[\p{L}\p{M}]$/u.test(name))bad('이름을 정확히 입력해 주세요 (외국인은 외국인등록증의 이름 그대로)');
     const b=parseBirth(birth);if(!b.ok)bad(b.err);const y=b.y;
     const di=hash(name.replace(/\s/g,'')+b.full);   // 6자리로 입력해도 8자리로 정규화해 같은 확인값이 나옵니다
-    const dup=S.users.find(u=>u.di===di&&!u.deleted);
+    const dup=S.users.find(u=>u.di===di&&!u.deleted&&!u.seed&&(u.createdAt||0)>=DI_CUTOFF);
     if(dup)bad(`이미 같은 본인정보로 가입된 계정이 있습니다 (${maskPhone(dup.phone)}). 혼디는 1인 1계정만 가능합니다. 해당 번호로 로그인해 주세요.`,'dup_account');
-    const w=S.withdrawn.find(x=>x.di===di&&x.until>Date.now());
+    const w=S.withdrawn.find(x=>x.di===di&&x.until>Date.now()&&(x.at||0)>=DI_CUTOFF);
     if(w){const days=Math.ceil((w.until-Date.now())/DAY);
       bad(w.sanctioned?`이용 제한 이력이 있어 재가입이 제한됩니다. ${fmtMD(w.until)} 이후에 다시 시도해 주세요. (${days}일 남음)`:`탈퇴 후 ${REJOIN_DAYS}일이 지나야 재가입할 수 있습니다. ${fmtMD(w.until)}부터 가능합니다. (${days}일 남음)`,'rejoin_wait');}
     SIGNUP.di=di;SIGNUP.nameMasked=name.length>2?name[0]+'*'.repeat(name.length-2)+name[name.length-1]:name[0]+'*';SIGNUP.birthYear=y;return true;},
@@ -879,7 +881,7 @@ const Srv={
     const activeD=S.dining.some(i=>!i.cancelled&&i.date>=todayStr()&&i.members.some(m=>m.uid===u.id));
     if(activeM||activeD)bad('진행 중인 공구·식탁이 있어 탈퇴할 수 없습니다. 정산이 끝난 뒤 다시 시도해 주세요.');
     const sanctioned=isRestricted(u)||S.reports.some(r=>r.targetUser===u.id&&r.status!=='dismiss');
-    S.withdrawn.push({di:u.di,sanctioned,until:Date.now()+(sanctioned?REJOIN_DAYS_SANCTION:REJOIN_DAYS)*DAY});
+    S.withdrawn.push({di:u.di,sanctioned,at:Date.now(),until:Date.now()+(sanctioned?REJOIN_DAYS_SANCTION:REJOIN_DAYS)*DAY});
     Object.assign(u,{deleted:true,phone:'deleted:'+u.id,nickname:'탈퇴한이웃',emoji:'👤',type:null,region:'',di:null,nameMasked:null,blocked:[],points:0,attend:[],events:[],trips:{},steps:0,pet:null,praise:{}});
     S.pointLog=S.pointLog.filter(l=>l.uid!==u.id);
     S.session=null;save();},
