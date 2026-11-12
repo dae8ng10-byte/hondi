@@ -705,11 +705,21 @@ const LS_KEY='hondi.demo.v3';
 let S=null, OTP=null, SIGNUP=null; const LASTMSG={};
 /* 저장된 데이터를 불러옵니다. 예시 데이터가 바뀐 경우엔 새 예시로 바꾸되, 체험·운영자 로그인은 유지합니다 */
 function loadWorld(){try{const raw=localStorage.getItem(LS_KEY);if(raw){const w=JSON.parse(raw);
-  if(w&&w.v===3&&w.seedVer===2)return w;
-  if(w&&w.v===3){const fresh=seedWorld();if(['u_demo','u_admin'].includes(w.session))fresh.session=w.session;return fresh;}}}catch(e){}return seedWorld();}
+  if(w&&w.v===3){if(w.seedVer!==2)upgradeWorld(w);return w;}}}catch(e){}return seedWorld();}
+/* 앱을 업데이트해도 가입한 계정과 기록은 절대 지우지 않아요: 옛 데이터는 새 형식으로만 바꿔요 */
+function upgradeWorld(w){(w.market||[]).forEach(i=>{const pl=PICKUP_PLACES[OLD_REGION[i.region]||i.region];if(i.pickupName==='동네마트'&&pl&&pl.length)i.pickupName=pl[0];});
+  w.settings=w.settings||{};if(w.settings.demoTools===undefined)w.settings.demoTools=false;w.seedVer=2;}
 let saveT=null;
-function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}},60);}
-function resetWorld(){try{localStorage.removeItem(LS_KEY);}catch(e){}S=migrate(seedWorld());OTP=null;SIGNUP=null;save();}
+function saveNow(){clearTimeout(saveT);try{if(S)localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}}
+function save(){clearTimeout(saveT);saveT=setTimeout(saveNow,60);}
+/* 앱을 닫거나 다른 앱으로 넘어갈 때 바로 저장하고, 브라우저에 저장 공간을 지워지지 않게 요청해요 */
+try{window.addEventListener('pagehide',saveNow);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow();});
+  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}
+/* 체험 예시(공구·식탁·채팅)만 처음으로 돌리고, 가입한 계정·포인트·단짝·일정은 그대로 둬요 */
+function resetWorld(){const keep=(S?S.users:[]).filter(u=>!u.seed&&!['u_demo','u_admin'].includes(u.id)&&!u.deleted),sess=S&&S.session,withdrawn=S?S.withdrawn:[];
+  S=migrate(seedWorld());keep.forEach(u=>{u.starter=[];S.users.push(u);});S.withdrawn=withdrawn||[];
+  if(sess&&S.users.some(u=>u.id===sess)){S.session=sess;const u=userById(sess);if(keep.includes(u))starterJoin(u);}
+  OTP=null;SIGNUP=null;saveNow();}
 /* 이전 버전에 저장된 데이터에도 새 필드(포인트·출석·친구·일정)를 채워 넣습니다 */
 function ext(u){if(!u)return u;
   if(typeof u.points!=='number')u.points=0;
@@ -1910,7 +1920,7 @@ Views.my=()=>{
     ${group('설정',myItem('quiz-start','🧭','생활 성향 테스트',u.type?TYPES[u.type].name:'아직 진단 전')+myItem('blocked-open','🚫','차단 관리',`${u.blocked.length}명`)
       +`<label class="mi"><span class="mi-e">🛠</span><span class="mi-t"><b>시연 도구 보이기</b><small>인원 채우기 · 단계 진행 버튼 (발표용)</small></span><input type="checkbox" data-in="demoTools" ${S.settings.demoTools?'checked':''} data-on="toggle-demo" style="width:22px;height:22px;accent-color:var(--orange)"></label>`)}
     ${group('고객지원',myItem('help-open','💬','도우미 · 1:1 문의','평일 10:00~18:00 답변')+myItem('legal-terms','📄','이용약관')+myItem('legal-priv','🔒','개인정보 처리 안내'))}
-    ${group('계정',myItem('logout','🚪','로그아웃')+myItem('reset-ask','🔄','체험 데이터 초기화','이 기기의 체험 기록을 처음 상태로 돌립니다.')+myItem('withdraw-ask','⚠️','회원 탈퇴',`탈퇴 후 ${REJOIN_DAYS}일 동안 재가입할 수 없습니다.`))}`;
+    ${group('계정',myItem('logout','🚪','로그아웃')+myItem('reset-ask','🔄','체험 예시 처음으로','계정·포인트는 그대로 두고 예시만 되돌립니다')+myItem('withdraw-ask','⚠️','회원 탈퇴',`탈퇴 후 ${REJOIN_DAYS}일 동안 재가입할 수 없습니다.`))}`;
 };
 function myItem(a,e,l,sub,extra){return `<button class="mi" data-a="${a}" ${extra||''}><span class="mi-e" aria-hidden="true">${e}</span><span class="mi-t"><b>${l}</b>${sub?`<small>${sub}</small>`:''}</span><span class="mi-c" aria-hidden="true">›</span></button>`;}
 A['my-activity']=()=>{if(!requireLogin())return;openSheet(()=>`<h2 class="title">🧾 참여 중인 공구 · 식탁</h2><div style="margin-top:12px">${myActivity()}</div>`,'myact');};
@@ -1920,7 +1930,7 @@ A['legal-priv']=(el,e)=>{el.dataset.k='privacy';A.legal(el,e);};
 A['toggle-demo']=el=>{S.settings.demoTools=el.checked;save();rerender();};
 A['logout']=()=>{Srv.logout();toast('로그아웃했습니다.');go('home');};
 A['withdraw-ask']=guard(()=>{ask({title:'정말 탈퇴할까요?',body:`개인정보는 즉시 파기됩니다. 같은 본인정보로는 ${REJOIN_DAYS}일 뒤(제재 이력이 있으면 ${REJOIN_DAYS_SANCTION}일 뒤)에 다시 가입할 수 있습니다. 진행 중인 공구·식탁이 있으면 탈퇴할 수 없습니다.`,ok:'탈퇴하기',danger:true,cancel:'취소',fn:()=>{try{Srv.withdraw();}catch(e){handleErr(e);return;}toast('탈퇴가 완료되었습니다.');go('home');}});});
-A['reset-ask']=()=>ask({title:'체험 데이터를 초기화할까요?',body:'가입한 계정·공구·식탁·채팅이 모두 처음 상태로 돌아갑니다.',ok:'초기화',danger:true,cancel:'취소',fn:()=>{resetWorld();toast('초기화했습니다.');go('intro');}});
+A['reset-ask']=()=>ask({title:'체험 예시를 처음으로 돌릴까요?',body:'예시 공구·식탁·채팅이 처음 상태로 돌아갑니다.\n가입한 계정, 포인트, 혼디 친구, 내 일정은 그대로 남습니다.',ok:'처음으로',danger:true,cancel:'취소',fn:()=>{resetWorld();toast('체험 예시를 처음 상태로 돌렸습니다.');go(me()?'home':'intro');}});
 
 /* ----- 운영자 ----- */
 const RTYPE={user:'이웃',market:'공구',dining:'식탁',message:'채팅 메시지'};
