@@ -382,8 +382,7 @@ table.pol{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}table.
       <li>🐾 함께 자라는 혼디 친구 · 이동 적립</li>
       <li>🧡 제주 청년 1인 가구 O2O 복지 플랫폼</li>
     </ul>
-    <div class="tips"><b>체험 안내</b><br>이웃·공구·식탁은 체험용 예시 데이터이고, 공유주방·픽업 거점은 실제로 있는 곳이며 아직 제휴 전입니다.<br><br>휴대폰 번호 <b>010-0000-0000</b> 입력 → 체험 계정으로 바로 로그인<br>
-      <b>010-9999-9999</b> → 운영자 화면(신고·문의 처리)<br>그 외 번호는 인증번호가 화면에 표시되는 가입 흐름을 체험할 수 있습니다.</div>
+    <div class="tips"><b>체험 안내</b><br>휴대폰 번호로 직접 가입해 보세요. 인증번호는 문자 대신 화면에 표시되고, 가입하면 예시 공구·식탁에 함께 참여한 상태로 시작합니다.<br><br>이웃·공구·식탁은 체험용 예시이고, 공유주방·픽업 거점은 실제로 있는 곳이며 아직 제휴 전입니다.<br><br><b>010-9999-9999</b> → 운영자 화면(신고·문의·평가 처리)</div>
   </aside>
 
   <div class="phone" id="app">
@@ -600,7 +599,7 @@ const RESERVED_NICK=['운영','관리자','혼디','admin','cs','고객센터'];
 /* ===== FAQ ===== */
 const FAQ=[
  {cat:'시작하기',q:'혼디는 어떤 서비스인가요?',k:['혼디','서비스','뭐','소개','무엇'],a:'제주 청년 1인 가구를 위한 O2O 복지 플랫폼입니다.\n• 혼디마켓: 생필품을 이웃과 공동구매해서 배송비를 1/N로 나누고, 동네 시장·마트에서 소분해 픽업합니다.\n• 모당식탁: 공유주방에서 함께 요리하고 식사하는 소셜 다이닝입니다.\n동 지역뿐 아니라 애월·대정·표선·성산·구좌 같은 읍·면 지역도 지역 선택으로 똑같이 이용할 수 있습니다.'},
- {cat:'시작하기',q:'가입은 어떻게 하나요?',k:['가입','회원','로그인','시작','인증번호'],a:'① 휴대폰 번호 입력 → ② 인증번호 확인 → ③ 본인확인(이름·생년월일) → ④ 닉네임·활동 지역·약관 동의 순서입니다. 둘러보기는 가입 없이도 가능하고, 참여·개설·채팅은 가입 후 이용할 수 있습니다.\n(체험 모드: 010-0000-0000을 입력하면 체험 계정으로 바로 로그인됩니다.)'},
+ {cat:'시작하기',q:'가입은 어떻게 하나요?',k:['가입','회원','로그인','시작','인증번호'],a:'① 휴대폰 번호 입력 → ② 인증번호 확인 → ③ 본인확인(이름·생년월일) → ④ 닉네임·활동 지역·약관 동의 순서입니다. 둘러보기는 가입 없이도 가능하고, 참여·개설·채팅은 가입 후 이용할 수 있습니다.\n(체험 모드에서는 인증번호가 화면에 표시됩니다.)'},
  {cat:'계정·개인정보',q:'왜 본인확인이 필요한가요? 계정은 몇 개까지 만들 수 있나요?',k:['본인확인','실명','계정','한사람','1인','중복','여러개','부계정'],a:'안전한 이웃 거래를 위해 가입할 때 본인확인을 합니다. 본인확인으로 얻는 중복가입 확인값(DI)으로 한 사람당 계정은 1개만 만들 수 있습니다. 이웃을 속이거나 신고당한 뒤 새 계정을 만드는 일을 막기 위한 장치입니다.'},
  {cat:'계정·개인정보',q:'개인정보는 어디까지 수집하나요?',k:['개인정보','수집','정보','주민','주소','위치','연락처','번호'],a:'꼭 필요한 정보만 받습니다.\n• 가입: 휴대폰 번호, 닉네임, 활동 지역(읍·면·시 단위)\n• 본인확인: 출생연도, 마스킹 이름(예: 홍*동), 중복가입 확인값\n받지 않는 정보: 주민등록번호, 상세 주소, 실시간 위치. 휴대폰 번호와 실명은 다른 이웃에게 공개되지 않습니다.'},
  {cat:'계정·개인정보',q:'탈퇴하면 바로 다시 가입할 수 있나요?',k:['탈퇴','재가입','다시가입','삭제'],a:`탈퇴하면 개인정보는 즉시 파기됩니다. 다만 탈퇴 후 재가입은 ${REJOIN_DAYS}일 뒤부터 가능합니다. 신고 누적·이용 제한 이력이 있으면 ${REJOIN_DAYS_SANCTION}일간 재가입이 제한됩니다. (이를 위해 복원할 수 없는 확인값만 해당 기간 동안 보관합니다.)\n진행 중인 공구·식탁이 있으면 정리한 뒤 탈퇴할 수 있습니다.`},
@@ -608,11 +607,11 @@ const FAQ=[
  {cat:'혼디마켓',q:'배송비 절감액은 어떻게 계산하나요?',k:['배송비','절감','1/n','나누','계산','할인'],a:'총 배송비 ÷ 참여 인원입니다. 예를 들어 배송비 4,000원을 4명이 나누면 1인당 1,000원이라 3,000원을 아끼게 됩니다. 상세 화면에서 혼자 구매할 때와 함께 구매할 때를 막대로 비교해 볼 수 있습니다.'},
  {cat:'결제·취소',q:'결제는 어떻게 하나요?',k:['결제','돈','입금','정산','에스크로','보관'],a:'참여할 때 앱에서 결제하면 대금은 혼디가 보관(에스크로)합니다. 공구는 소분 픽업이 확인되면, 식탁은 모임이 끝나면 정산됩니다. 이웃 간 개인 계좌 송금은 사기 예방을 위해 금지입니다.\n(체험 모드에서는 실제 결제 없이 시연으로 진행됩니다.)'},
  {cat:'결제·취소',q:'공구 참여를 취소할 수 있나요?',k:['공구취소','참여취소','취소','마켓취소','마감당일'],a:'모집 마감일 전날까지는 전액 환불로 취소할 수 있습니다. 마감 당일이거나 발주가 시작된 뒤에는 취소할 수 없습니다. 마감까지 목표 인원이 모이지 않으면 자동으로 전액 환불됩니다.'},
- {cat:'결제·취소',q:'식탁(모임) 참여를 취소할 수 있나요? 노쇼는요?',k:['식탁취소','모임취소','노쇼','불참','당일취소','재료비','못가','못갈','못가면'],a:'모임 전날까지는 전액 환불로 취소할 수 있습니다. 모임 당일에는 재료 준비가 끝나 취소할 수 없습니다. 당일 불참(노쇼)은 재료비가 호스트에게 정산되고 매너온도가 내려갑니다. 부득이한 사정은 도우미에서 문의를 접수해 주세요.'},
+ {cat:'결제·취소',q:'식탁(모임) 참여를 취소할 수 있나요? 노쇼는요?',k:['식탁취소','모임취소','노쇼','불참','당일취소','재료비','못가','못갈','못가면'],a:'모임 전날까지는 전액 환불로 취소할 수 있습니다. 모임 당일에는 재료 준비가 끝나 취소할 수 없습니다. 당일 불참(노쇼)은 재료비가 호스트에게 정산되고 돌담이 낮아집니다. 부득이한 사정은 도우미에서 문의를 접수해 주세요.'},
  {cat:'모당식탁',q:'공유주방은 어떻게 예약하나요?',k:['예약','공유주방','주방','식탁열기','호스트','개설'],a:'모당식탁에서 ＋식탁 열기 → 공간·날짜·시간을 고르면 바로 예약됩니다. 같은 공간·시간은 한 팀만 예약할 수 있고, 이미 찬 시간은 회색으로 표시됩니다. 예약은 모임 전날까지만 취소할 수 있습니다.'},
  {cat:'안전',q:'불량 이용자를 신고하거나 차단하려면?',k:['신고','차단','불량','사기','욕설','괴롭','블락'],a:'이웃 프로필·공구·식탁·채팅 메시지 옆의 🚩 신고 버튼으로 신고할 수 있습니다. 서로 다른 이웃 3명 이상이 신고하면 자동으로 임시 이용 제한이 걸리고, 운영팀이 확인 후 경고·이용정지를 결정합니다. 🚫 차단하면 그 이웃의 글과 채팅이 내게 보이지 않습니다(MY → 차단 관리에서 해제).'},
  {cat:'안전',q:'채팅에서 연락처나 링크를 보낼 수 없는 이유는요?',k:['채팅','톡','연락처','링크','전화번호','메시지','금칙어'],a:'개인 연락처·외부 링크·계좌번호 공유는 스토킹, 사기, 원치 않는 연락으로 이어지기 쉬워서 막아 뒀습니다. 모임·픽업 안내는 해당 공구/식탁의 단체 채팅에서 충분히 할 수 있습니다. 욕설·성적 표현도 자동으로 차단됩니다.'},
- {cat:'안전',q:'매너온도는 무엇인가요?',k:['매너','온도','신뢰','점수'],a:'이웃과의 약속을 얼마나 잘 지키는지 보여주는 온도입니다. 기본 36.5°C에서 시작해, 픽업·모임을 잘 마치면 올라가고 노쇼나 신고 처리가 되면 내려갑니다.'},
+ {cat:'안전',q:'돌담은 무엇인가요?',k:['돌담','매너','온도','신뢰','점수','단'],a:'약속을 얼마나 잘 지키는지 보여 주는 혼디만의 신뢰 지표입니다. 제주 돌담을 한 단씩 쌓듯, 10단에서 시작해 공구 픽업·식탁 참석을 잘 마치면 3단, 좋은 후기를 받으면 1단씩 쌓입니다. 노쇼는 20단, 아쉬운 후기는 2단이 낮아집니다. 바람에도 무너지지 않는 제주 돌담처럼, 쌓인 믿음이 곧 내 이웃 신용입니다.'},
  {cat:'시작하기',q:'성향 테스트는 어디에 쓰이나요?',k:['성향','테스트','유형','심리','추천','진단'],a:'식습관과 장보기(생필품·식재료) 습관을 묻는 9문항으로 5가지 생활 성향(요리꾼·산책러·살림꾼·탐험가·충전러) 중 나를 찾아줍니다. 결과에서 혼디마켓·모당식탁 궁합을 각각 보여 주고, 잘 맞는 이웃과 공구·식탁을 추천해 줍니다. 프로필에는 유형 뱃지만 표시됩니다.'}
 ];
 
@@ -649,7 +648,7 @@ FAQ.push(
  {cat:'도움말',q:'1:1 문의는 누가, 언제 답변하나요?',k:['답변','언제답','운영시간','상담시간','문의시간','답장','상담원'],a:'혼디 운영팀이 직접 답변합니다. 답변 시간은 평일 10:00~18:00(점심 12:00~13:00 제외)이고, 접수 후 영업일 기준 1일 이내에 답변합니다. 주말·공휴일 문의는 다음 영업일에 순서대로 답변합니다.'},
  {cat:'안전',q:'후기(평가)는 어떻게 남기나요?',k:['후기','평가','리뷰','별점','아쉬운점','좋았던'],a:'공구 픽업을 마치거나 식탁 당일이 되면 상세 화면에 "함께한 이웃 후기 남기기"가 생깁니다. 좋았던 점은 상대 프로필에 공개되고, 아쉬운 점은 상대에게 보이지 않고 운영팀만 확인합니다.'},
  {cat:'시작하기',q:'어느 지역에서 쓸 수 있나요?',k:['지역','동네','읍면','어디서','서귀포','제주시','우리동네'],a:'제주시와 서귀포시 전체에서 쓸 수 있습니다. 동 지역은 가까운 동끼리 생활권으로 묶었고, 읍·면은 각각 고를 수 있습니다. 아직 공구·식탁이 없는 지역에서는 "우리 동네에도 열어 주세요."를 눌러 수요를 남길 수 있습니다.'},
- {cat:'계정·개인정보',q:'로그인이 계속 유지되나요?',k:['로그인','자동로그인','로그인유지','로그아웃','체험계정','최근'],a:'한 번 로그인하면 로그아웃하기 전까지 이 기기에서 로그인이 유지됩니다. 체험 계정의 활동 기록도 이 기기에 남고, 처음 상태로 돌리고 싶으면 MY → 체험 데이터 초기화를 누르면 됩니다.'}
+ {cat:'계정·개인정보',q:'로그인이 계속 유지되나요?',k:['로그인','자동로그인','로그인유지','로그아웃','체험계정','최근'],a:'한 번 로그인하면 로그아웃하기 전까지 이 기기에서 로그인이 유지됩니다. 활동 기록도 이 기기에 남고, 처음 상태로 돌리고 싶으면 MY → 체험 데이터 초기화를 누르면 됩니다.'}
 );
 /* ===== 월드 시드 (체험용 이웃·공구·식탁·채팅) ===== */
 function seedWorld(){
@@ -662,7 +661,7 @@ function seedWorld(){
   U('n7','01011110007','한라봉','🍊','saver','한림읍',36.8); U('n8','01011110008','돌하르방','🗿','explorer','표선면',36.5);
   U('n9','01011110009','이불속곰','🐻','rester','아라·오라',36.4); U('n10','01011110010','뒹굴이','🦥','rester','중문·예래',36.5);
   U('u_admin','01099999999','혼디운영팀','🛡️','explorer','일도·이도',40,{role:'admin',seed:false});
-  U('u_demo','01000000000','혼디체험','😊',null,'일도·이도',36.5,{seed:false,di:hash('홍길동19980315'),nameMasked:'홍*동',birthYear:1998});
+  U('u_demo','01000000000','귤빛산책','🐬','walker','일도·이도',36.5,{seed:false,di:hash('홍길동19980315'),nameMasked:'홍*동',birthYear:1998});
   const mk=(hostId,emoji,title,cat,region,price,ship,goal,dl,fit,pn,pd,desc,members)=>{const id='m'+(++seq);
     const it={id,hostId,emoji,title,cat,region,price,ship,goal,stage:1,deadline:addDays(t0,dl),fit,pickupName:pn,pickupDate:addDays(t0,pd),pickupTime:`${fmtDate(addDays(t0,pd))} 18:00~20:00`,desc,cancelled:false,failed:false,members:[]};
     members.forEach(uid=>{it.members.push({uid,code:newCode(),picked:false,joinedAt:uid==='u_demo'?now-3*3600000:now-rand(5)*3600000});
@@ -732,7 +731,14 @@ const OLD_SPACE_TEXT=['제주시 주민센터 공유주방','서귀포시 청년
 const RECENT_KEY='hondi.recent';
 function recentLogins(){try{return JSON.parse(localStorage.getItem(RECENT_KEY)||'[]').filter(x=>/^01\d{8,9}$/.test(x)).slice(0,3);}catch(e){return [];}}
 function rememberLogin(phone){try{const l=[phone,...recentLogins().filter(x=>x!==phone)].slice(0,3);localStorage.setItem(RECENT_KEY,JSON.stringify(l));}catch(e){}}
-function migrate(w){w.pointLog=Array.isArray(w.pointLog)?w.pointLog:[];w.reviews=Array.isArray(w.reviews)?w.reviews:[];w.demand=w.demand&&typeof w.demand==='object'?w.demand:{};w.users.forEach(ext);
+/* 새로 가입한 사람도 바로 둘러볼 수 있게: 오늘(없으면 가까운) 식탁 하나와 모집 중인 공구 하나에 참여한 상태로 시작해요 */
+function starterJoin(u){const t=todayStr(),past=Date.now()-3*3600000,picks=[];
+  const d=S.dining.filter(i=>!i.cancelled&&i.date>=t&&i.members.length<i.cap).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
+  if(d){d.members.push({uid:u.id,joinedAt:past,attend:null});if(d.cost)S.payments.push({id:'p'+nid(),uid:u.id,kind:'dining',itemId:d.id,amount:d.cost,status:'paid',method:'카카오페이',ts:past});picks.push(d.id);}
+  const m=S.market.filter(i=>!i.cancelled&&!i.failed&&i.stage===1&&i.deadline>t&&i.members.length<=i.goal-2).sort((a,b)=>b.members.length-a.members.length)[0];
+  if(m){m.members.push({uid:u.id,code:newCode(),picked:false,joinedAt:past});S.payments.push({id:'p'+nid(),uid:u.id,kind:'market',itemId:m.id,amount:m.price+Math.ceil(m.ship/m.goal),status:'paid',method:'카카오페이',ts:past});picks.push(m.id);}
+  u.starter=picks;}
+function migrate(w){(w.users||[]).forEach(u=>{if(u.id==='u_demo'&&u.nickname==='혼디체험'){u.nickname='귤빛산책';u.emoji='🐬';if(!u.type)u.type='walker';}});w.pointLog=Array.isArray(w.pointLog)?w.pointLog:[];w.reviews=Array.isArray(w.reviews)?w.reviews:[];w.demand=w.demand&&typeof w.demand==='object'?w.demand:{};w.users.forEach(ext);
   w.users.forEach(u=>{if(OLD_REGION[u.region])u.region=OLD_REGION[u.region];});(w.market||[]).forEach(i=>{if(OLD_REGION[i.region])i.region=OLD_REGION[i.region];});
   (w.market||[]).forEach(i=>{if(OLD_PLACE[i.pickupName])i.pickupName=OLD_PLACE[i.pickupName];if(!CATS.includes(i.cat))i.cat=OLD_CAT[i.cat]||'생활용품';});
   (w.dining||[]).forEach(i=>{if(OLD_SPACE_ID[i.spaceId])i.spaceId=OLD_SPACE_ID[i.spaceId];if(!DINING_CATS.includes(i.cat))i.cat='한식';});
@@ -851,7 +857,7 @@ const Srv={
     if(S.users.some(u=>!u.deleted&&u.phone===SIGNUP.phone))bad('이미 가입된 번호입니다. 로그인해 주세요.');
     const u={id:'u'+nid(),phone:SIGNUP.phone,nickname:nick,emoji:USER_EMOJI.includes(p.emoji)?p.emoji:'😊',type:S.guestType||null,region:p.region,temp:36.5,role:'user',
       verified:true,di:SIGNUP.di,birthYear:SIGNUP.birthYear,nameMasked:SIGNUP.nameMasked,blocked:[],restrictedUntil:0,createdAt:Date.now(),marketing:!!p.marketing};
-    S.users.push(ext(u));S.session=u.id;rememberLogin(SIGNUP.phone);SIGNUP=null;save();return u;},
+    S.users.push(ext(u));S.session=u.id;starterJoin(u);rememberLogin(SIGNUP.phone);SIGNUP=null;save();return u;},
   logout(){S.session=null;save();},
   withdraw(){const u=needUser();
     if(u.id==='u_demo'||u.role==='admin')bad('체험 계정은 탈퇴할 수 없습니다. 다른 번호로 가입해서 탈퇴 흐름을 체험해 보세요.');
@@ -998,13 +1004,15 @@ function avatar(u,cls){
   return `<span class="avatar ${cls||''}" style="--c:${typeColor(u.type)}">${esc(u.emoji)}${t?`<i class="avatar-badge">${t.emoji}</i>`:''}</span>`;
 }
 function typePill(t){const T=TYPES[t];return T?`<span class="type-pill" style="--c:${T.color}">${T.emoji} ${T.short}</span>`:'';}
-function tempTag(u){return `<span class="temp ${u.temp<36?'low':''}">🌡️ ${u.temp.toFixed(1)}°C</span>`;}
+/* 돌담: 약속을 지킬 때마다 한 단씩 쌓이는 신뢰 지표 (기본 10단) */
+function stoneOf(u){return u?Math.max(0,Math.round((u.temp-35.5)*10)):0;}
+function tempTag(u){const n=stoneOf(u);return `<span class="temp ${n<5?'low':''}" title="약속을 지킬 때마다 쌓이는 신뢰 돌담">🪨 돌담 ${n}단</span>`;}
 function avatarStack(ids,max){max=max||4;const list=ids.slice(0,max).map(id=>avatar(userById(id))).join('');
   return `<span class="stack">${list}</span>${ids.length>max?`<span class="muted" style="margin-left:6px">+${ids.length-max}</span>`:''}`;}
 
 /* ----- 토스트 ----- */
 let toastT=null;
-function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800);}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),String(msg).length>30?4500:2800);}
 function handleErr(e){
   if(e instanceof HErr){if(e.code==='need_login'){openAuth();return;}toast(e.message);}
   else{console.error(e);toast('잠시 문제가 생겼습니다. 다시 시도해 주세요.');}
@@ -1094,8 +1102,8 @@ function authHtml(){
   const head=(t,sub)=>`<div class="muted">${steps[AUTH.step]}/4 단계</div><h2 class="title">${t}</h2><p class="muted" style="margin-bottom:6px">${sub}</p>`;
   if(AUTH.step==='phone')return `${head('휴대폰 번호로 시작하기','번호 하나로 가입합니다. 상세 주소·주민번호는 받지 않습니다.')}
     ${(()=>{const rl=recentLogins();return rl.length?`<div class="field"><label>최근 로그인한 번호</label><div class="chip-row" style="flex-wrap:wrap">${rl.map(ph=>`<button type="button" class="chip" data-a="auth-recent" data-p="${ph}">📱 ${maskPhone(ph)}</button>`).join('')}</div></div>`:'';})()}
-    ${fld('휴대폰 번호',inp('phone',{mode:'numeric',ph:'010-0000-0000',fmt:'phone',max:13,ac:'tel',enter:'auth-phone'}))}
-    <div class="notice info"><b>체험 모드 안내</b><br>• <b>010-0000-0000</b> 입력 → 체험 계정으로 바로 입장 (활동 기록이 이 기기에 남습니다)<br>• 다른 번호 → 가입 흐름 체험 (인증번호는 화면에 표시됩니다)<br>• 실제 문자·결제는 발송/청구되지 않습니다.</div>${err}
+    ${fld('휴대폰 번호',inp('phone',{mode:'numeric',ph:'010-1234-5678',fmt:'phone',max:13,ac:'tel',enter:'auth-phone'}))}
+    <div class="notice info"><b>체험 모드 안내</b><br>• 아무 휴대폰 번호로나 가입할 수 있습니다. 인증번호는 문자 대신 화면에 표시됩니다.<br>• 가입하면 둘러보기 쉽도록 예시 공구·식탁에 함께 참여한 상태로 시작합니다.<br>• 실제 문자·결제는 발송/청구되지 않습니다.</div>${err}
     <button class="btn primary block" data-a="auth-phone">인증번호 받기</button>`;
   if(AUTH.step==='otp')return `${head('인증번호를 입력합니다.',`${esc(fmtPhone(DRAFT.phone))} 로 보낸 6자리 숫자입니다.`)}
     <div class="notice ok">체험용 인증번호: <b class="code">${AUTH.code}</b> <button class="link" data-a="auth-otp-fill" style="background:none;border:0">자동 입력</button></div>
@@ -1149,7 +1157,7 @@ A['auth-id']=()=>{
 A['auth-signup']=()=>{
   try{
     const u=Srv.signup({nickname:DRAFT.nick,region:DRAFT.region,emoji:DRAFT.emoji,agreeTerms:DRAFT.agreeTerms,agreePrivacy:DRAFT.agreePrivacy,age14:DRAFT.age14,marketing:DRAFT.marketing});
-    closeSheet();toast(`${u.nickname}님, 가입을 환영합니다! 🎉`);afterLogin();
+    closeSheet();toast(u.starter&&u.starter.length?`${u.nickname}님, 환영합니다! 둘러보기 쉽도록 예시 공구·식탁에 함께 참여해 두었습니다.`:`${u.nickname}님, 가입을 환영합니다! 🎉`);afterLogin();
     if(!u.type)setTimeout(()=>ask({title:'성향 테스트 해볼까요?',body:'식습관·장보기 습관 9문항으로 나의 혼디 생활 성향을 찾고, 마켓·식탁 궁합과 잘 맞는 이웃을 추천해 드립니다. (1분)',ok:'테스트 하기',cancel:'나중에',fn:()=>{startQuiz();}}),500);
   }catch(e){AUTH.err=e.message;refreshSheet();}
 };
@@ -1263,7 +1271,7 @@ function payHtml(){
   const rows=(isM?`<div class="row-between"><span>상품가</span><b>${won(i.price)}</b></div><div class="row-between"><span>배송비 ${won(i.ship)} ÷ ${i.goal}명</span><b>${won(per)}</b></div>`:`<div class="row-between"><span>재료비</span><b>${won(i.cost)}</b></div>`)
     +(use?`<div class="row-between" style="color:var(--green-d)"><span>🪙 포인트 할인</span><b>−${won(use)}</b></div>`:'');
   const ptsRow=canUse>0?chk('usePts',`🪙 포인트 <b>${canUse}P</b> 쓰기 <span class="muted">(보유 ${u.points}P · 결제금액의 최대 ${Math.round(PAY_PT_RATE*100)}%)</span>`,{on:'pay-repaint'}):(u&&u.points>0?'':`<div class="muted" style="margin:4px 2px">🪙 출석체크·걸음으로 모은 포인트로 최대 ${Math.round(PAY_PT_RATE*100)}% 할인받을 수 있습니다.</div>`);
-  const rule=isM?'참여 취소는 <b>모집 마감일 전날까지</b>만 가능합니다. 마감 당일·발주 이후에는 취소할 수 없습니다.':'참여 취소는 <b>모임 전날까지</b>만 가능합니다. 모임 <b>당일 취소는 불가</b>하고, 당일 불참(노쇼) 시 재료비가 정산되며 매너온도가 내려갑니다.';
+  const rule=isM?'참여 취소는 <b>모집 마감일 전날까지</b>만 가능합니다. 마감 당일·발주 이후에는 취소할 수 없습니다.':'참여 취소는 <b>모임 전날까지</b>만 가능합니다. 모임 <b>당일 취소는 불가</b>하고, 당일 불참(노쇼) 시 재료비가 정산되며 돌담이 낮아집니다.';
   return `<h2 class="title">${isM?'공구 참여 결제':'식탁 참여 결제'}</h2><p class="muted">${esc(i.emoji)} ${esc(i.title)}</p>
     <div class="card" style="margin-top:12px">${rows}<hr style="border:0;border-top:1px solid var(--line);margin:10px 0"><div class="row-between"><b>결제 금액</b><b style="font-size:22px;color:var(--orange-d)">${won(amt)}</b></div></div>
     ${ptsRow}
@@ -1379,7 +1387,7 @@ function dDetailHtml(){
     <div class="person" data-a="profile" data-id="${i.hostId}" style="cursor:pointer;margin:8px 0">${avatar(host)}<span class="info"><b>호스트 ${esc(dispName(host))} <span class="tag gray" data-a="terms" data-k="d" style="cursor:pointer">호스트란?</span></b><small>${host&&host.type?typePill(host.type):''} ${host&&!host.deleted?tempTag(host):''}</small></span><span class="muted">›</span></div>
     <div class="progress ${n>=i.cap?'done':''}"><i style="width:${Math.round(n/i.cap*100)}%"></i></div><div class="prog-meta"><span>${n}/${i.cap}명</span><span>${n>=i.cap?'마감':`${i.cap-n}자리 남음`}</span></div>
     ${ticket}
-    <details class="policy"><summary>💳 결제 · 취소 안내</summary><div style="margin-top:6px">재료비는 혼디가 보관하고 모임이 끝나면 호스트에게 정산됩니다.<br>• 취소는 <b>모임 전날까지</b> 전액 환불<br>• <b>모임 당일 취소 불가</b> · 노쇼 시 재료비 정산 + 매너온도 −2°C</div></details>
+    <details class="policy"><summary>💳 결제 · 취소 안내</summary><div style="margin-top:6px">재료비는 혼디가 보관하고 모임이 끝나면 호스트에게 정산됩니다.<br>• 취소는 <b>모임 전날까지</b> 전액 환불<br>• <b>모임 당일 취소 불가</b> · 노쇼 시 재료비 정산 + 돌담 −20단</div></details>
     ${act}${mine&&dActive(i)&&i.date<=todayStr()?reviewBtn('d',i):''}
     <div class="sec"><div class="sec-head"><h3>함께하는 이웃 ${n}명</h3>${mine&&dActive(i)?`<a data-a="chat-open" data-id="${i.id}">💬 단체 채팅</a>`:''}</div>${roster}</div>
     ${u&&!isHost?`<div style="display:flex;justify-content:center;margin-top:14px"><a class="link" data-a="report-open" data-t="dining" data-id="${i.id}">🚩 이 식탁 신고</a></div>`:''}`;
@@ -1390,7 +1398,7 @@ A['d-join']=guard(el=>{if(!requireLogin())return;const i=findD(el.dataset.id);if
   openSheet(payHtml,'pay');});
 A['d-leave']=guard(el=>{const id=el.dataset.id;ask({title:'참여를 취소할까요?',body:'모임 전날까지는 전액 환불됩니다. 당일에는 취소할 수 없습니다.',ok:'참여 취소',danger:true,cancel:'유지하기',fn:()=>{Srv.dnLeave(id);toast('참여를 취소했습니다. 재료비가 환불됩니다.');rerender();setTimeout(()=>{UI.did=id;openSheet(dDetailHtml,'ddetail');},0);return 'keep';}});});
 A['d-cancel']=guard(el=>{const id=el.dataset.id;ask({title:'식탁을 취소할까요?',body:'참여자 모두에게 재료비가 전액 환불됩니다. 당일에는 호스트도 취소할 수 없습니다.',ok:'식탁 취소',danger:true,cancel:'닫기',fn:()=>{Srv.dnCancel(id);toast('식탁을 취소했습니다.');rerender();setTimeout(()=>{UI.did=id;openSheet(dDetailHtml,'ddetail');},0);return 'keep';}});});
-A['d-att']=guard(el=>{Srv.dnAttend(UI.did,el.dataset.uid,el.dataset.p==='1');toast(el.dataset.p==='1'?'참석 처리했습니다 (매너온도 +0.3)':'노쇼 처리했습니다 (재료비 정산 · 매너온도 −2)');rerender();});
+A['d-att']=guard(el=>{Srv.dnAttend(UI.did,el.dataset.uid,el.dataset.p==='1');toast(el.dataset.p==='1'?'참석 처리했습니다 (돌담 +3단)':'노쇼 처리했습니다 (재료비 정산 · 돌담 −20단)');rerender();});
 
 /* ----- 식탁 열기 ----- */
 function dNewHtml(){
@@ -1787,7 +1795,7 @@ Views.intro=()=>`<div class="ob-hero"><div class="big">🍊</div><h1>배송비�
   <button class="btn primary block" data-a="quiz-start">혼디 생활 성향 테스트 시작 (1분)</button>
   <button class="btn ghost block" style="margin-top:10px" data-a="auth-open">로그인 · 가입</button>
   <button class="link-btn" data-a="intro-skip">먼저 둘러보기</button>
-  <div class="notice info" style="text-align:left;margin-top:14px">💡 체험 모드: 로그인에서 <b>010-0000-0000</b> 을 입력하면 체험 계정으로 바로 이용해 볼 수 있습니다.</div></div>`;
+  <div class="notice info" style="text-align:left;margin-top:14px">💡 체험용 앱입니다. 휴대폰 번호로 가입하면 인증번호가 화면에 표시되고, 예시 공구·식탁에 참여한 상태로 바로 둘러볼 수 있습니다.</div></div>`;
 A['intro-skip']=()=>{UI.introSkipped=true;go('home');};
 A['auth-open']=()=>openAuth();
 
@@ -1868,7 +1876,7 @@ Views.home=()=>{
   const todays=todayItems();
   return `<h1 style="margin-top:6px">${u?`${esc(u.nickname)}님,<br>오늘도 든든한 한 끼 🧡`:'배송비는 나누고,<br>마음은 더하고! 🧡'}</h1>
   ${isRestricted(u)?`<div class="notice red">⛔ 이용 제한 중입니다 (${fmtMD(u.restrictedUntil)}까지). 참여·개설·채팅이 제한됩니다. 도우미 → 1:1 문의로 연락해 주세요.</div>`:''}
-  ${u?'':`<div class="guest-card"><b>둘러보는 중입니다 👀</b><p class="muted" style="margin:4px 0 10px">가입하면 공구·식탁에 참여하고 이웃과 채팅할 수 있습니다. 체험은 <b>010-0000-0000</b> 으로 바로 로그인!</p><button class="btn primary block" data-a="auth-open">로그인 · 가입</button></div>`}
+  ${u?'':`<div class="guest-card"><b>둘러보는 중입니다 👀</b><p class="muted" style="margin:4px 0 10px">가입하면 공구·식탁에 참여하고 이웃과 채팅할 수 있습니다. 가입은 1분이면 끝납니다.</p><button class="btn primary block" data-a="auth-open">로그인 · 가입</button></div>`}
   ${u?buddyCardHtml(u):''}
   ${todays.length?`<div class="sec"><h2>📌 오늘 할 일</h2>${todays.map(x=>{const tripOk=x.kind==='d'||x.i.stage===4;return `<div class="card tap today-card" data-a="${x.kind==='m'?'m-open':'d-open'}" data-id="${x.i.id}"><b>${esc(x.i.emoji)} ${esc(x.i.title)}</b><div class="muted">${x.label}</div><div class="acts">${tripOk?`<button class="chip" data-a="trip-start" data-key="${x.kind}:${x.i.id}">🚶 친구랑 같이 가기</button>`:''}<span class="btn primary">자세히 보기</span></div></div>`;}).join('')}</div>`:''}
   <div class="save-card" style="margin-top:14px"><div style="font-weight:700">내가 아낀 배송비</div><div class="num">${won(mySaved())}</div><div style="font-size:13px">${u?'함께 사면 배송비는 1/N! 이웃과 더 아껴 볼까요?':'가입하고 공구에 참여하면 여기에 쌓입니다.'}</div>
@@ -1888,14 +1896,14 @@ function myActivity(){
 }
 Views.my=()=>{
   const u=me();
-  if(!u)return `<h1 style="margin-top:6px">MY</h1><div class="guest-card"><b>로그인이 필요합니다</b><p class="muted" style="margin:4px 0 10px">체험은 010-0000-0000으로 바로 로그인할 수 있습니다.</p><button class="btn primary block" data-a="auth-open">로그인 · 가입</button></div>
+  if(!u)return `<h1 style="margin-top:6px">MY</h1><div class="guest-card"><b>로그인이 필요합니다</b><p class="muted" style="margin:4px 0 10px">휴대폰 번호로 1분 만에 가입할 수 있습니다.</p><button class="btn primary block" data-a="auth-open">로그인 · 가입</button></div>
     <div class="mg" style="margin-top:14px">${myItem('help-open','💬','도우미 · 1:1 문의','평일 10:00~18:00 답변')}${myItem('quiz-start','🧭','혼디 생활 성향 테스트')}</div>`;
   const active=S.market.filter(i=>mActive(i)&&isMember(i,u.id)).length+S.dining.filter(i=>dActive(i)&&i.date>=todayStr()&&isMember(i,u.id)).length;
   const praiseN=Object.values(u.praise||{}).reduce((a,b)=>a+b,0);
   const group=(t,items)=>`<div class="sec" style="margin-top:20px"><h3 class="mg-title">${t}</h3><div class="mg">${items}</div></div>`;
   return `<div class="card" style="margin-top:6px"><div class="person">${avatar(u,'lg')}<span class="info"><b style="font-size:18px">${esc(u.nickname)}</b><small>${esc(u.region)} · ${maskPhone(u.phone)}</small><span>${u.type?typePill(u.type):''}</span></span><button class="chip" data-a="profile" data-id="${u.id}">내 프로필</button></div>
     ${isRestricted(u)?`<div class="notice red">⛔ 이용 제한 중입니다 (${fmtMD(u.restrictedUntil)}까지).</div>`:''}
-    <div class="my-stats"><button data-a="profile" data-id="${u.id}"><b>${u.temp.toFixed(1)}°</b><span>매너온도</span></button><button data-a="pts-open"><b>${u.points.toLocaleString()}P</b><span>포인트</span></button><button data-a="my-activity"><b>${active}건</b><span>참여 중</span></button></div></div>
+    <div class="my-stats"><button data-a="profile" data-id="${u.id}"><b>${stoneOf(u)}단</b><span>🪨 돌담</span></button><button data-a="pts-open"><b>${u.points.toLocaleString()}P</b><span>포인트</span></button><button data-a="my-activity"><b>${active}건</b><span>참여 중</span></button></div></div>
     ${u.role==='admin'?`<div class="mg" style="margin-top:12px">${myItem('go-admin','🛡️','운영자 화면','신고 · 문의 · 평가 · 지역 수요')}</div>`:''}
     ${group('나의 활동',myItem('my-activity','🧾','참여 중인 공구 · 식탁',`${active}건`)+myItem('go-cal','📅','캘린더',`출석 ${streakOf(u)}일 연속 · 내 일정 ${u.events.length}개`)+myItem('pay-list','💳','결제 내역','보관 · 정산 · 환불 상태')+myItem('profile','💐','받은 칭찬',`${praiseN}개`,`data-id="${u.id}"`))}
     ${group('혜택',myItem('pts-open','🪙','포인트',`${u.points.toLocaleString()}P 보유`)+myItem('pet-open','🐾','혼디 친구',u.pet?`${esc(u.pet.name)} · Lv.${petLevel(u.pet.exp).lv}`:'아직 함께하는 친구가 없습니다.'))}
@@ -2127,7 +2135,7 @@ function evNewHtml(){const D=DRAFT;
 
 /* ----- 캘린더 화면 ----- */
 Views.cal=()=>{const u=me();
-  if(!u)return `<h1 style="margin-top:6px">📅 캘린더</h1><div class="guest-card"><b>로그인하면 약속이 자동으로 정리됩니다</b><p class="muted" style="margin:4px 0 10px">공구 마감·픽업일, 식탁 모임이 캘린더에 들어가고 출석 도장도 찍힙니다. 체험은 010-0000-0000!</p><button class="btn primary block" data-a="auth-open">로그인 · 가입</button></div>`;
+  if(!u)return `<h1 style="margin-top:6px">📅 캘린더</h1><div class="guest-card"><b>로그인하면 약속이 자동으로 정리됩니다</b><p class="muted" style="margin:4px 0 10px">공구 마감·픽업일, 식탁 모임이 캘린더에 들어가고 출석 도장도 찍힙니다.</p><button class="btn primary block" data-a="auth-open">로그인 · 가입</button></div>`;
   const t=todayStr();if(!UI.calMonth)UI.calMonth=t.slice(0,7);if(!UI.calSel)UI.calSel=t;
   const [Y,M]=UI.calMonth.split('-').map(Number),first=new Date(Y,M-1,1),startDow=first.getDay(),daysIn=new Date(Y,M,0).getDate();
   const evs=calEvents(u),byDate={};evs.forEach(e=>(byDate[e.date]=byDate[e.date]||[]).push(e));const att=new Set(u.attend);
@@ -2250,7 +2258,7 @@ function reviewHtml(){const u=me(),i=RV.kind==='m'?findM(RV.id):findD(RV.id);if(
       <div class="rv-label">🤔 아쉬운 점 <small>(비공개 · 운영팀만 확인)</small></div>${chipRow(CONCERN,bad2,'rc-chip')}
       <button class="btn primary block" style="padding:11px;font-size:15px;margin-top:6px" data-a="rv-send" data-u="${x.id}" ${good.length||bad2.length?'':'disabled'}>후기 남기기</button>`}</div>`;}).join('');
   return `<h2 class="title">📝 함께한 이웃 후기</h2><p class="muted">${esc(i.emoji)} ${esc(i.title)}</p>
-    <div class="notice info">좋았던 점은 상대 프로필에 공개되고 매너온도가 올라갑니다. 아쉬운 점은 상대에게 보이지 않고, 운영팀이 확인한 뒤 매너온도에만 반영됩니다.</div>
+    <div class="notice info">좋았던 점은 상대 프로필에 공개되고 돌담이 한 단 쌓입니다. 아쉬운 점은 상대에게 보이지 않고, 운영팀이 확인한 뒤 돌담에만 반영됩니다.</div>
     <div style="margin-top:12px">${rows}</div>
     <div class="muted" style="font-size:12px">위험하거나 심각한 일이 있었다면 프로필의 🚩 신고를 이용해 주세요.</div>`;}
 function praiseHtml(x){ext(x);const list=Object.entries(x.praise||{}).sort((a,b)=>b[1]-a[1]);if(!list.length)return '<div class="muted" style="text-align:center;margin-top:12px">아직 받은 칭찬이 없습니다.</div>';
@@ -2292,7 +2300,7 @@ const TERMS={m:[['👑','팟장','공구를 처음 연 사람입니다. 상품�
   ['🍽️','공유주방','여러 사람이 시간을 나눠 빌려 쓰는 주방입니다. 지금 보이는 곳은 실제로 있는 공간이며 아직 제휴 전입니다. 대관 조건은 운영처 기준을 따릅니다.'],
   ['🥕','재료비','메뉴 재료를 참여 인원이 나눠 내는 금액입니다. 남은 음식은 함께 나눠 가져갑니다.']],
  all:[['💳','결제금 보관','낸 돈을 혼디가 잠시 보관했다가, 공구는 픽업이 끝나면, 식탁은 모임이 끝나면 정산합니다. 이웃끼리 직접 송금하지 않습니다.'],
-  ['🌡️','매너온도','약속을 잘 지키는지 보여 주는 온도입니다. 36.5°C에서 시작해 픽업·모임을 잘 마치거나 좋은 후기를 받으면 오르고, 노쇼나 아쉬운 후기가 있으면 내려갑니다.']]};
+  ['🪨','돌담','약속을 얼마나 잘 지키는지 보여 주는 혼디만의 신뢰 지표입니다. 제주 돌담을 한 단씩 쌓듯, 10단에서 시작해 픽업·모임을 잘 마치면 3단, 좋은 후기를 받으면 1단씩 쌓입니다. 노쇼는 20단, 아쉬운 후기는 2단이 낮아집니다.']]};
 A['terms']=(el,e)=>{if(e)e.stopPropagation();const k=el.dataset.k||'m',list=[...(TERMS[k]||[]),...TERMS.all];PREV.render=SH.render;PREV.kind=SH.kind;
   openSheet(()=>`<h2 class="title">ⓘ ${k==='d'?'모당식탁':'혼디마켓'} 용어 안내</h2><div style="margin-top:12px">${list.map(([e2,t,d])=>`<div class="term"><span class="term-e">${e2}</span><div><b>${t}</b><p>${d}</p></div></div>`).join('')}</div>${PREV.render?'<button class="link-btn" data-a="sheet-back">← 돌아가기</button>':''}`,'terms');};
 const upcomingDAll=()=>S.dining.filter(i=>!i.cancelled&&i.date>=todayStr());
