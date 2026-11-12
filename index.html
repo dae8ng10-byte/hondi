@@ -406,7 +406,7 @@ table.pol{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}table.
 </div>
 <script>
 'use strict';
-/* 실행 모드: 일반 사용자용(기본) / 발표용(demo/index.html에서 HONDI_DEMO=true). 두 모드는 데이터도 따로 저장해요 */
+/* 실행 모드: 일반 사용자용(기본) / 시연(demo/index.html에서 HONDI_DEMO=true). 두 모드는 데이터도 따로 저장해요 */
 const DEMO_MODE=window.HONDI_DEMO===true;
 /* ===== 유틸 ===== */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -1942,7 +1942,7 @@ Views.my=()=>{
     ${group('나의 활동',myItem('my-activity','🧾','참여 중인 공구 · 식탁',`${active}건`)+myItem('go-cal','📅','캘린더',`출석 ${streakOf(u)}일 연속 · 내 일정 ${u.events.length}개`)+myItem('pay-list','💳','결제 내역','보관 · 정산 · 환불 상태')+myItem('profile','💐','받은 칭찬',`${praiseN}개`,`data-id="${u.id}"`))}
     ${group('혜택',myItem('pts-open','🪙','포인트',`${u.points.toLocaleString()}P 보유`)+myItem('pet-open','🐾','혼디 친구',u.pet?`${esc(u.pet.name)} · Lv.${petLevel(u.pet.exp).lv}`:'아직 함께하는 친구가 없습니다.'))}
     ${group('설정',myItem('quiz-start','🧭','생활 성향 테스트',u.type?TYPES[u.type].name:'아직 진단 전')+myItem('blocked-open','🚫','차단 관리',`${u.blocked.length}명`)
-      +(DEMO_MODE?`<label class="mi"><span class="mi-e">🛠</span><span class="mi-t"><b>시연 도구 보이기</b><small>인원 채우기 · 단계 진행 버튼 (발표용)</small></span><input type="checkbox" data-in="demoTools" ${S.settings.demoTools?'checked':''} data-on="toggle-demo" style="width:22px;height:22px;accent-color:var(--orange)"></label>`:''))}
+      +(DEMO_MODE?`<label class="mi"><span class="mi-e">🛠</span><span class="mi-t"><b>시연 도구 보이기</b><small>인원 채우기 · 단계 진행 버튼</small></span><input type="checkbox" data-in="demoTools" ${S.settings.demoTools?'checked':''} data-on="toggle-demo" style="width:22px;height:22px;accent-color:var(--orange)"></label>`:''))}
     ${group('고객지원',myItem('help-open','💬','도우미 · 1:1 문의','평일 10:00~18:00 답변')+myItem('legal-terms','📄','이용약관')+myItem('legal-priv','🔒','개인정보 처리 안내'))}
     ${group('계정',myItem('logout','🚪','로그아웃')+myItem('reset-ask','🔄','체험 예시 처음으로','계정·포인트는 그대로 두고 예시만 되돌립니다')+myItem('withdraw-ask','⚠️','회원 탈퇴',`탈퇴 후 ${REJOIN_DAYS}일 동안 재가입할 수 없습니다.`))}`;
 };
@@ -2357,7 +2357,6 @@ const upcomingDAll=()=>S.dining.filter(i=>!i.cancelled&&i.date>=todayStr());
 /* ----- 부팅 ----- */
 function boot(){
   S=migrate(loadWorld());if(!DEMO_MODE)S.settings.demoTools=false;Srv.sweep();
-  if(DEMO_MODE){const lg=$('.logo');if(lg)lg.insertAdjacentHTML('afterend','<span class="tag" style="margin-left:6px">발표용</span>');}
   const rs=$('#regionSelect');rs.innerHTML='<option value="전체">전체 지역</option><optgroup label="시 전체"><option value="제주시">제주시 전체</option><option value="서귀포시">서귀포시 전체</option></optgroup>'+regionOptions('',true);
   rs.addEventListener('change',()=>{UI.region=rs.value;UI.dspace=null;paint(true);});
   UI.view=(me()||S.guestType||UI.introSkipped)?'home':'intro';
