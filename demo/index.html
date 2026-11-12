@@ -353,9 +353,9 @@ table.pol{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}table.
 .cal-stamp{position:absolute;right:1px;top:0;font-size:9px;font-style:normal}
 .cal-legend{display:flex;gap:6px 12px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin:10px 2px 0}
 .cal-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:4px}
-.ev{display:flex;gap:10px;align-items:center;padding:12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--c);margin-bottom:8px}
+.ev{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--c);margin-bottom:8px}
 .ev .t{flex:1;min-width:0}.ev .t b{display:block;overflow-wrap:anywhere}
-.ev .tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.ev .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}.ev>span[aria-hidden]{line-height:1;margin-top:2px;width:28px;text-align:center;flex-shrink:0}.ev .tags .ev-go{padding:2px 9px;font-size:12px;font-weight:700;min-height:0;line-height:1.5;border-radius:999px;background:var(--green-l);color:var(--green-d);border:1px solid transparent}
 
 /* 함께 이동 (걸음) */
 .trip-scene{position:relative;height:200px;border-radius:22px;overflow:hidden;margin:12px 0;background:linear-gradient(#BFE6FF,#E8F7FF 62%);border:1px solid var(--line)}
@@ -729,10 +729,19 @@ function loadWorld(){try{const raw=localStorage.getItem(LS_KEY);if(raw){const w=
 function upgradeWorld(w){(w.market||[]).forEach(i=>{const pl=PICKUP_PLACES[OLD_REGION[i.region]||i.region];if(i.pickupName==='동네마트'&&pl&&pl.length)i.pickupName=pl[0];});
   w.settings=w.settings||{};if(w.settings.demoTools===undefined)w.settings.demoTools=false;w.seedVer=2;}
 let saveT=null;
-function saveNow(){clearTimeout(saveT);try{if(S)localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}}
-function save(){clearTimeout(saveT);saveT=setTimeout(saveNow,60);}
+/* 같은 기기에서 창(탭)을 여러 개 열어도, 오래된 창이 새 내용(예: 관리자 삭제)을 덮어쓰지 않게 저장 번호를 비교합니다 */
+const REV_KEY=LS_KEY+'.rev';let BASE_REV=0,DIRTY=false;
+function storedRev(){try{return +localStorage.getItem(REV_KEY)||0;}catch(e){return 0;}}
+function adoptStored(){try{const raw=localStorage.getItem(LS_KEY);if(!raw)return false;const w=JSON.parse(raw);if(!w||w.v!==3)return false;
+  const mine=S?S.session:null;S=migrate(w);if(mine)S.session=userById(mine)&&!userById(mine).deleted?mine:null;BASE_REV=storedRev();DIRTY=false;return true;}catch(e){return false;}}
+function saveNow(){clearTimeout(saveT);if(!S)return;try{const cur=storedRev();
+  if(cur>BASE_REV){adoptStored();try{paint(true);if(sheetOpen()&&SH.kind!=='auth')refreshSheet();}catch(e){}return;}
+  BASE_REV=cur+1;S.rev=BASE_REV;localStorage.setItem(LS_KEY,JSON.stringify(S));localStorage.setItem(REV_KEY,String(BASE_REV));DIRTY=false;}catch(e){}}
+function save(){DIRTY=true;clearTimeout(saveT);saveT=setTimeout(saveNow,60);}
+function flush(){if(DIRTY)saveNow();}
+try{window.addEventListener('storage',e=>{if(e.key!==REV_KEY||!S||storedRev()<=BASE_REV)return;adoptStored();try{paint(true);if(sheetOpen()&&SH.kind!=='auth')refreshSheet();}catch(err){}});}catch(e){}
 /* 앱을 닫거나 다른 앱으로 넘어갈 때 바로 저장하고, 브라우저에 저장 공간을 지워지지 않게 요청해요 */
-try{window.addEventListener('pagehide',saveNow);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow();});
+try{window.addEventListener('pagehide',flush);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush();});
   if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}
 /* 체험 예시(공구·식탁·채팅)만 처음으로 돌리고, 가입한 계정·포인트·단짝·일정은 그대로 둬요 */
 function resetWorld(){const keep=(S?S.users:[]).filter(u=>!u.seed&&!['u_demo','u_admin'].includes(u.id)&&!u.deleted),sess=S&&S.session,withdrawn=S?S.withdrawn:[];
@@ -2128,7 +2137,7 @@ function evRow(e){
     e.host?'<span class="tag">내가 연 약속</span>':'',e.tentative?'<span class="tag gray">목표 달성 시 확정</span>':'',e.done?'<span class="tag g">픽업 완료</span>':''].join('');
   return `<div class="ev" style="--c:${EV_COLOR[e.kind]}"><span style="font-size:24px" aria-hidden="true">${esc(e.emoji)}</span>
     <div class="t" ${e.auto?`data-a="${e.kind==='dining'?'d-open':'m-open'}" data-id="${e.id}" style="cursor:pointer"`:''}><b>${esc(e.title)}</b>
-    <div class="muted">${segs([EV_LABEL[e.kind],e.time||'시간 미정',e.place&&esc(e.place)])}</div><div class="tags">${tags}${e.trip?`<button class="chip" style="padding:4px 10px;font-size:12.5px" data-a="trip-start" data-key="${e.tripKey}">🚶 같이 가기</button>`:''}</div>${e.memo?`<div class="muted" style="margin-top:4px">📝 ${esc(e.memo)}</div>`:''}</div>
+    <div class="muted">${segs([EV_LABEL[e.kind],e.time||'시간 미정',e.place&&esc(e.place)])}</div><div class="tags">${tags}${e.trip?`<button class="chip ev-go" data-a="trip-start" data-key="${e.tripKey}">🚶 같이 가기</button>`:''}</div>${e.memo?`<div class="muted" style="margin-top:4px">📝 ${esc(e.memo)}</div>`:''}</div>
     ${!e.auto?`<button class="chip" data-a="ev-del" data-id="${e.id}" aria-label="일정 삭제">✕</button>`:''}</div>`;
 }
 
@@ -2397,7 +2406,7 @@ const upcomingDAll=()=>S.dining.filter(i=>!i.cancelled&&i.date>=todayStr());
 
 /* ----- 부팅 ----- */
 function boot(){
-  S=migrate(loadWorld());if(!DEMO_MODE)S.settings.demoTools=false;Srv.sweep();
+  S=migrate(loadWorld());BASE_REV=storedRev();if(!DEMO_MODE)S.settings.demoTools=false;Srv.sweep();
   const rs=$('#regionSelect');rs.innerHTML='<option value="전체">전체 지역</option><optgroup label="시 전체"><option value="제주시">제주시 전체</option><option value="서귀포시">서귀포시 전체</option></optgroup>'+regionOptions('',true);
   rs.addEventListener('change',()=>{UI.region=rs.value;UI.dspace=null;paint(true);});
   UI.view=(me()||S.guestType||UI.introSkipped)?'home':'intro';
