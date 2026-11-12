@@ -216,6 +216,7 @@ details.policy summary:after{content:' ▾';font-weight:400}details.policy[open]
 .page-head .link{background:none;border:0;padding:4px 0;white-space:nowrap}
 .cat-bar{display:flex;gap:6px;overflow-x:auto;padding:8px 0 6px;scrollbar-width:none}.cat-bar::-webkit-scrollbar{display:none}
 .cat-bar .chip{padding:7px 12px;font-size:13.5px}
+.nw{white-space:nowrap}
 .page-lead{color:var(--ink2);font-size:13.5px;margin:12px 2px 10px}
 .lc{padding:14px 16px}.lc-top{display:flex;gap:12px;align-items:center}.lc-main{flex:1;min-width:0}
 .lc-title{display:block;font-size:16px;line-height:1.35}.lc-sub{font-size:13px;color:var(--ink2);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1057,6 +1058,12 @@ function guard(fn){return(el,ev)=>{try{fn(el,ev);}catch(e){handleErr(e);}};}
 
 /* ----- 시트(바텀시트) ----- */
 const SH={render:null,kind:null};
+/* 여러 항목을 ' · '로 이을 때 항목 중간에서 줄이 나뉘지 않게 묶습니다 */
+function segs(a){return a.filter(Boolean).map(x=>`<span class="nw">${x}</span>`).join(' · ');}
+/* '시장·마트'처럼 가운뎃점으로 이은 낱말과 전화번호는 줄바꿈 때 쪼개지지 않게 합니다 */
+const NB_RE=/([^\s\u2060])([·\-])(?=[^\s\u2060])/g;
+function nbFix(root){try{const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const t=n.nodeValue;if(t.indexOf('·')<0&&t.indexOf('-')<0)continue;const pe=n.parentElement;if(pe&&pe.closest('script,style,textarea,input'))continue;const v=t.replace(NB_RE,(m,a,c)=>c==='-'&&!/[\d*]/.test(a)?m:a+'\u2060'+c+'\u2060');if(v!==t)n.nodeValue=v;}}catch(e){}}
+try{new MutationObserver(ms=>{ms.forEach(m=>m.addedNodes.forEach(x=>{if(x.nodeType===1)nbFix(x);else if(x.nodeType===3&&x.parentNode)nbFix(x.parentNode);}));}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
 function openSheet(render,kind){
   SH.render=render;SH.kind=kind||null;
   $('#modal-root').innerHTML=`<div class="backdrop" data-a="bd"><div class="sheet" role="dialog" aria-modal="true"><div class="sheet-grip"></div><button class="sheet-x" data-a="sheet-close" aria-label="닫기">✕</button><div id="sheet-body">${render()}</div></div></div>`;
@@ -1236,7 +1243,7 @@ Views.market=function(){
     :REGIONS.includes(UI.region)?demandHtml('m',UI.region):`<div class="empty"><b>🛒</b>열려 있는 공구가 없습니다.<br>첫 공구를 열어 보세요.</div>`;
   return `<div class="top-sticky"><div class="page-head"><h1>혼디마켓</h1><button class="link" data-a="terms" data-k="m">ⓘ 팟장·소분 픽업이란?</button></div>
     ${catBar(CATS,UI.cat,'m-cat',CAT_EMOJI)}</div>
-    <p class="page-lead">함께 사면 배송비는 1/N, 소분 픽업은 동네 시장·마트에서 합니다.</p>
+    <p class="page-lead">함께 사면 배송비는 1/N입니다.<br>소분 픽업은 동네 시장·마트에서 합니다.</p>
     ${list.length?list.map(mCard).join(''):empty}
     <button class="fab" data-a="m-new">＋ 공구 열기</button>`;
 };
@@ -1282,9 +1289,9 @@ function mDetailHtml(){
     <div class="progress ${n>=i.goal?'done':''}"><i style="width:${Math.min(100,Math.round(n/i.goal*100))}%"></i></div>
     <div class="prog-meta"><span>${n}/${i.goal}명</span><span>${i.stage===1?ddLabel(i.deadline)+' · '+fmtDate(i.deadline)+' 마감':STAGES[i.stage-1]}</span></div>
     <div class="card" style="margin-top:14px"><h3>💸 배송비 1/N 비교</h3>${bar('혼자 구매',solo,'solo')}${bar(`지금 ${Math.max(n,1)}명`,now,'share')}${bar(`${i.goal}명 달성`,goal,'share')}
-      <div class="muted">지금 구매하면 1인 배송비 <b>${won(perHead(i,Math.max(n,1)))}</b> · <b style="color:var(--green-d)">${won(saveNow)}</b> 절약 (${Math.round(saveNow/i.ship*100||0)}%)</div></div>
+      <div class="muted"><span class="nw">1인 배송비 <b>${won(perHead(i,Math.max(n,1)))}</b></span> · <span class="nw"><b style="color:var(--green-d)">${won(saveNow)}</b> 절약 (${Math.round(saveNow/i.ship*100||0)}%)</span></div></div>
     <div class="stepper">${steps}</div>
-    <div class="info-box"><b>📍 소분 픽업</b>${esc(i.pickupName)} <span class="muted">(${esc(i.region)}${MARKET_DAYS[i.pickupName]?' · '+MARKET_DAYS[i.pickupName]:''})</span> · ${esc(i.pickupTime)}${isSeedPlace(i.pickupName)?`<div style="margin-top:6px">${PARTNER_TAG}</div>`:''}</div>
+    <div class="info-box"><b>📍 소분 픽업</b><span class="nw">${esc(i.pickupName)}</span> <span class="muted nw">(${esc(i.region)}${MARKET_DAYS[i.pickupName]?' · '+MARKET_DAYS[i.pickupName]:''})</span><br><span class="nw">🕕 ${esc(i.pickupTime)}</span>${isSeedPlace(i.pickupName)?`<div style="margin-top:6px">${PARTNER_TAG}</div>`:''}</div>
     ${body}
     <details class="policy"><summary>💳 결제 · 취소 안내</summary><div style="margin-top:6px">결제금액은 혼디가 보관(에스크로)하고 픽업 확인 후 정산됩니다.<br>• 참여 취소는 <b>모집 마감일 전날까지</b> 가능 (마감 당일·발주 후 불가)<br>• 마감까지 목표 미달이면 <b>자동 전액 환불</b></div></details>
     ${act}${demo}
@@ -1420,8 +1427,8 @@ function dDetailHtml(){
   const ticket=mine&&today&&dActive(i)?`<div class="ticket"><div class="big">🎟️</div><b>오늘 모임입니다!</b><div class="muted">${i.time} · ${esc(sp.name)}</div><button class="btn green block" style="margin-top:12px" data-a="trip-start" data-key="d:${i.id}">🚶 ${u.pet?esc(u.pet.name)+'랑':'친구랑'} 같이 가기 · 이동 적립</button></div>`:'';
   return `<div class="m-card"><div class="top"><div class="tile g">${esc(i.emoji)}</div><div class="t"><h2 style="font-size:19px">${esc(i.title)}</h2><span class="muted">${fmtDate(i.date)} ${i.time} · ${i.cost?won(i.cost):'무료'}</span></div></div></div>
     <p style="margin:10px 0">${esc(i.desc)}</p>
-    <div class="info-box"><b>🍽️ 메뉴</b>${esc(i.menu)}<div class="muted" style="margin-top:4px">🥗 못 먹는 음식이 있다면 단체 채팅으로 미리 알려 주세요.</div></div>
-    <div class="info-box"><b>${sp.emoji} ${esc(sp.name)}</b><span class="muted">${esc(sp.org)} · ${esc(sp.addr)}</span><div class="muted" style="margin-top:4px">${sp.tools.map(esc).join(' · ')} · ${esc(sp.note)}</div><div style="margin-top:6px">${PARTNER_TAG}</div></div>
+    <div class="info-box"><b>🍽️ 메뉴</b>${esc(i.menu)}<div class="muted" style="margin-top:4px">🥗 못 먹는 음식은 단체 채팅으로 미리 알려 주세요.</div></div>
+    <div class="info-box"><b>${sp.emoji} ${esc(sp.name)}</b><span class="muted">${esc(sp.org)} · ${esc(sp.addr)}</span><div class="muted" style="margin-top:4px">${segs(sp.tools.map(esc))}<br>${segs(sp.note.split(' · ').map(esc))}</div><div style="margin-top:6px">${PARTNER_TAG}</div></div>
     <div class="person" data-a="profile" data-id="${i.hostId}" style="cursor:pointer;margin:8px 0">${avatar(host)}<span class="info"><b>호스트 ${esc(dispName(host))} <span class="tag gray" data-a="terms" data-k="d" style="cursor:pointer">호스트란?</span></b><small>${host&&host.type?typePill(host.type):''} ${host&&!host.deleted?tempTag(host):''}</small></span><span class="muted">›</span></div>
     <div class="progress ${n>=i.cap?'done':''}"><i style="width:${Math.round(n/i.cap*100)}%"></i></div><div class="prog-meta"><span>${n}/${i.cap}명</span><span>${n>=i.cap?'마감':`${i.cap-n}자리 남음`}</span></div>
     ${ticket}
@@ -1920,7 +1927,7 @@ Views.home=()=>{
   ${todays.length?`<div class="sec"><h2>📌 오늘 할 일</h2>${todays.map(x=>{const tripOk=x.kind==='d'||x.i.stage===4;return `<div class="card tap today-card" data-a="${x.kind==='m'?'m-open':'d-open'}" data-id="${x.i.id}"><b>${esc(x.i.emoji)} ${esc(x.i.title)}</b><div class="muted">${x.label}</div><div class="acts">${tripOk?`<button class="chip" data-a="trip-start" data-key="${x.kind}:${x.i.id}">🚶 친구랑 같이 가기</button>`:''}<span class="btn primary">자세히 보기</span></div></div>`;}).join('')}</div>`:''}
   <div class="save-card" style="margin-top:14px"><div style="font-weight:700">내가 아낀 배송비</div><div class="num">${won(mySaved())}</div><div style="font-size:13px">${u?'함께 사면 배송비는 1/N! 이웃과 더 아껴 볼까요?':'가입하고 공구에 참여하면 여기에 쌓입니다.'}</div>
     ${(()=>{const c=communityStats();return `<div style="display:flex;gap:8px;margin-top:12px"><div style="flex:1;background:rgba(255,255,255,.35);border-radius:12px;padding:8px 10px"><div style="font-size:12px;font-weight:700">혼디 아낀 배송비</div><b style="font-size:16px">${won(c.saved)}</b></div><div style="flex:1;background:rgba(255,255,255,.35);border-radius:12px;padding:8px 10px"><div style="font-size:12px;font-weight:700">혼디 나눈 밥</div><b style="font-size:16px">${c.meals}끼</b></div></div>`;})()}</div>
-  ${T?'':`<div class="card tap" style="margin-top:14px" data-a="quiz-start"><div class="person"><span class="tile">🧭</span><span class="info"><b>혼디 생활 성향 테스트</b><small>1분 · 장보기·식사 습관으로 마켓·식탁 궁합과 이웃 추천</small></span><span class="muted">›</span></div></div>`}
+  ${T?'':`<div class="card tap" style="margin-top:14px" data-a="quiz-start"><div class="person"><span class="tile">🧭</span><span class="info"><b>혼디 생활 성향 테스트</b><small>1분이면 나와 잘 맞는 이웃을 추천받습니다.</small></span><span class="muted">›</span></div></div>`}
   <div class="sec"><div class="sec-head"><h2>지금 모집 중인 공구</h2><a data-a="go" data-view="market">더 보기</a></div>${ms.map(mCard).join('')||'<div class="muted">열린 공구가 없습니다.</div>'}</div>
   <div class="sec"><div class="sec-head"><h2>다가오는 식탁</h2><a data-a="go" data-view="dining">더 보기</a></div>${ds.map(dCard).join('')||'<div class="muted">열린 식탁이 없습니다.</div>'}</div>
   <div class="legal-links"><a data-a="help-open">자주 묻는 질문</a><a data-a="legal" data-k="terms">이용약관</a><a data-a="legal" data-k="privacy">개인정보 안내</a></div>`;
@@ -1940,7 +1947,7 @@ Views.my=()=>{
   const active=S.market.filter(i=>mActive(i)&&isMember(i,u.id)).length+S.dining.filter(i=>dActive(i)&&i.date>=todayStr()&&isMember(i,u.id)).length;
   const praiseN=Object.values(u.praise||{}).reduce((a,b)=>a+b,0);
   const group=(t,items)=>`<div class="sec" style="margin-top:20px"><h3 class="mg-title">${t}</h3><div class="mg">${items}</div></div>`;
-  return `<div class="card" style="margin-top:6px"><div class="person">${avatar(u,'lg')}<span class="info"><b style="font-size:18px">${esc(u.nickname)}</b><small>${esc(u.region)} · ${maskPhone(u.phone)}</small><span>${u.type?typePill(u.type):''}</span></span><button class="chip" data-a="profile" data-id="${u.id}">내 프로필</button></div>
+  return `<div class="card" style="margin-top:6px"><div class="person">${avatar(u,'lg')}<span class="info"><b style="font-size:18px">${esc(u.nickname)}</b><small>${segs([esc(u.region),maskPhone(u.phone)])}</small><span>${u.type?typePill(u.type):''}</span></span><button class="chip" data-a="profile" data-id="${u.id}">내 프로필</button></div>
     ${isRestricted(u)?`<div class="notice red">⛔ 이용 제한 중입니다 (${fmtMD(u.restrictedUntil)}까지).</div>`:''}
     <div class="my-stats"><button data-a="profile" data-id="${u.id}"><b>${stoneOf(u)}</b><span>🤝 수눌음</span></button><button data-a="pts-open"><b>${u.points.toLocaleString()}P</b><span>포인트</span></button><button data-a="my-activity"><b>${active}건</b><span>참여 중</span></button></div></div>
     ${u.role==='admin'?`<div class="mg" style="margin-top:12px">${myItem('go-admin','🛡️','운영자 화면','신고 · 문의 · 평가 · 지역 수요')}</div>`:''}
@@ -2092,7 +2099,7 @@ function evRow(e){
     e.host?'<span class="tag">내가 연 약속</span>':'',e.tentative?'<span class="tag gray">목표 달성 시 확정</span>':'',e.done?'<span class="tag g">픽업 완료</span>':''].join('');
   return `<div class="ev" style="--c:${EV_COLOR[e.kind]}"><span style="font-size:24px" aria-hidden="true">${esc(e.emoji)}</span>
     <div class="t" ${e.auto?`data-a="${e.kind==='dining'?'d-open':'m-open'}" data-id="${e.id}" style="cursor:pointer"`:''}><b>${esc(e.title)}</b>
-    <div class="muted">${EV_LABEL[e.kind]} · ${e.time||'시간 미정'}${e.place?' · '+esc(e.place):''}</div><div class="tags">${tags}</div>${e.memo?`<div class="muted" style="margin-top:4px">📝 ${esc(e.memo)}</div>`:''}</div>
+    <div class="muted">${segs([EV_LABEL[e.kind],e.time||'시간 미정',e.place&&esc(e.place)])}</div><div class="tags">${tags}</div>${e.memo?`<div class="muted" style="margin-top:4px">📝 ${esc(e.memo)}</div>`:''}</div>
     ${e.trip?`<button class="chip" data-a="trip-start" data-key="${e.tripKey}">🚶 같이 가기</button>`:''}${!e.auto?`<button class="chip" data-a="ev-del" data-id="${e.id}" aria-label="일정 삭제">✕</button>`:''}</div>`;
 }
 
@@ -2107,7 +2114,7 @@ function petLine(u){const p=u.pet,t=todayStr(),evs=calEvents(u),today=evs.filter
   return ['오늘은 공구 구경 갈까? 배송비 아끼는 거 재밌잖아!','같이 걸으면 포인트도 쌓여. 다음 약속 기다려진다!','이웃이랑 밥 먹으면 나도 쑥쑥 클 것 같아!'][new Date().getDate()%3];
 }
 function petCardHtml(u){ext(u);
-  if(!u.pet)return `<div class="card tap pet-home" data-a="pet-open"><div class="person"><span class="tile" style="font-size:30px">🥚</span><span class="info"><b>혼디 친구 데려오기</b><small>출석·거래·걷기를 함께하며 자라는 나만의 동료입니다.</small></span><span class="pts-chip">🪙 ${u.points}P</span></div></div>`;
+  if(!u.pet)return `<div class="card tap pet-home" data-a="pet-open"><div class="person"><span class="tile" style="font-size:30px">🥚</span><span class="info"><b>혼디 친구 데려오기</b><small>출석·거래·걷기로<br>함께 자라는 나만의 동료입니다.</small></span><span class="pts-chip">🪙 ${u.points}P</span></div></div>`;
   const L=petLevel(u.pet.exp);
   return `<div class="card pet-home" id="pet-home"><div class="pet-row"><button class="pet-mini" data-a="pet-open" aria-label="${esc(u.pet.name)} 자세히 보기">${petSvg(u.pet)}</button>
     <div style="flex:1;min-width:0"><div class="row-between"><b>${esc(u.pet.name)} <span class="tag">Lv.${L.lv}</span></b><button class="pts-chip" data-a="pts-open">🪙 ${u.points.toLocaleString()}P</button></div>
@@ -2137,9 +2144,9 @@ function buddyCardHtml(u){ext(u);const p=u.pet,L=p?petLevel(p.exp):null;
       <div style="flex:1;min-width:0"><div class="row-between"><b>${esc(p.name)} <span class="tag">Lv.${L.lv}</span></b><button class="pts-chip" data-a="pts-open">🪙 ${u.points.toLocaleString()}P</button></div>
       <div class="pet-bubble sm">${esc(petLine(u))}</div>
       <div class="pet-actions sm" style="margin-top:8px"><button class="chip" data-a="pet-pat">🤚 쓰다듬기</button><button class="chip" data-a="pet-snack">🍪 간식</button></div></div></div>`
-    :`<div class="person" data-a="pet-open" style="cursor:pointer"><span class="tile" style="font-size:30px">🥚</span><span class="info"><b>혼디 친구 데려오기</b><small>출석·거래·걷기를 함께하며 자라는 동료입니다.</small></span><span class="pts-chip">🪙 ${u.points}P</span></div>`;
+    :`<div class="person" data-a="pet-open" style="cursor:pointer"><span class="tile" style="font-size:30px">🥚</span><span class="info"><b>혼디 친구 데려오기</b><small>출석·거래·걷기로<br>함께 자라는 동료입니다.</small></span><span class="pts-chip">🪙 ${u.points}P</span></div>`;
   const msg=done?(pos===ATT_STREAK?`🎁 ${ATT_STREAK}일 연속! +${ATT_BONUS}P를 받았습니다`:`오늘 출석 완료 · ${left}일 더 하면 +${ATT_BONUS}P`)
-    :(left===1?`<b style="color:var(--orange-d)">오늘 7일째! 보너스 +${ATT_BONUS}P</b>`:`오늘 출석 +${ATT_DAILY}P · ${left}일 연속이면 +${ATT_BONUS}P`);
+    :(left===1?`<b style="color:var(--orange-d)">오늘 7일째! 보너스 +${ATT_BONUS}P</b>`:`<span class="nw">오늘 출석 +${ATT_DAILY}P</span> · <span class="nw">${left}일 연속이면 +${ATT_BONUS}P</span>`);
   return `<div class="card pet-home" id="pet-home">${top}
     <div class="att-wrap"><div class="row-between"><b style="font-size:14px">📅 출석체크</b><span class="muted">${st?`🔥 ${st}일 연속`:'오늘부터 시작!'}</span></div>
     <div class="att-days sm">${slots}</div>
