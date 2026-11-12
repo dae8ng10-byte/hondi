@@ -217,6 +217,7 @@ details.policy summary:after{content:' ▾';font-weight:400}details.policy[open]
 .cat-bar{display:flex;gap:6px;overflow-x:auto;padding:8px 0 6px;scrollbar-width:none}.cat-bar::-webkit-scrollbar{display:none}
 .cat-bar .chip{padding:7px 12px;font-size:13.5px}
 .nw{white-space:nowrap}
+.snl-box{margin:12px auto 0;max-width:340px;background:var(--green-l);border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.55;color:var(--ink);text-align:center}.snl-box b{display:block;color:var(--green-d);margin-bottom:2px;font-size:13px}.snl-box small{display:block;margin-top:4px;color:var(--ink2);font-size:11.5px}
 .page-lead{color:var(--ink2);font-size:13.5px;margin:12px 2px 10px}
 .lc{padding:14px 16px}.lc-top{display:flex;gap:12px;align-items:center}.lc-main{flex:1;min-width:0}
 .lc-title{display:block;font-size:16px;line-height:1.35}.lc-sub{font-size:13px;color:var(--ink2);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -384,7 +385,7 @@ table.pol{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}table.
       <li>🐾 함께 자라는 혼디 친구 · 이동 적립</li>
       <li>🧡 제주 청년 1인 가구 O2O 복지 플랫폼</li>
     </ul>
-    <div class="tips"><b>체험 안내</b><br>휴대폰 번호로 직접 가입해 보세요. 인증번호는 문자 대신 화면에 표시되고, 가입하면 예시 공구·식탁에 함께 참여한 상태로 시작합니다.<br><br>이웃·공구·식탁은 체험용 예시이고, 공유주방·픽업 거점은 실제로 있는 곳이며 아직 제휴 전입니다.<br><br><b>010-9999-9999</b> → 운영자 화면(신고·문의·평가 처리)</div>
+    <div class="tips"><b>체험 안내</b><br>휴대폰 번호로 직접 가입해 보세요. 인증번호는 문자 대신 화면에 표시되고, 가입하면 예시 공구·식탁에 함께 참여한 상태로 시작합니다.<br><br><b>010-9999-9999</b> → 운영자 화면(신고·문의·평가 처리)</div>
   </aside>
 
   <div class="phone" id="app">
@@ -645,9 +646,9 @@ FAQ.push(
 FAQ.push(
  {cat:'혼디마켓',q:'팟장은 무엇인가요?',k:['팟장','방장','공구장','리더','주최'],a:'팟장은 공구를 처음 연 사람입니다. 상품을 주문하고, 물건이 도착하면 시장·마트에서 1인분씩 나눠 담아(소분) 이웃에게 건네줍니다. 팟장도 똑같이 결제하고 참여합니다. 공구 상세 화면의 "팟장이란?"을 누르면 용어 안내를 볼 수 있습니다.'},
  {cat:'혼디마켓',q:'소분 픽업은 어떻게 받나요?',k:['픽업','받는법','받으러','수령','qr','코드','픽업방법'],a:'물건이 도착하면 공구가 "소분 픽업" 단계로 바뀌고 채팅으로 안내가 옵니다. 정해진 시장·마트에 가서 앱의 QR 코드나 6자리 코드를 팟장에게 보여 주면 픽업이 끝납니다. 픽업이 확인되면 결제금이 정산됩니다.'},
- {cat:'혼디마켓',q:'픽업 장소는 실제로 있는 곳인가요?',k:['장소','거점','시장','마트','하나로','오일장','동문시장','올레시장','실제'],a:'네. 지역마다 실제로 있는 전통시장과 농협 하나로마트를 픽업 거점 후보로 넣었습니다. 다만 아직 제휴 전이라 화면에 "실제 장소 · 제휴 전"으로 표시합니다. 오일장은 장날(예: 제주시 민속오일시장 2·7일)에 맞춰 픽업을 잡으면 좋습니다.'},
+ {cat:'혼디마켓',q:'픽업 장소는 실제로 있는 곳인가요?',k:['장소','거점','시장','마트','하나로','오일장','동문시장','올레시장','실제'],a:'네. 지역마다 실제로 있는 전통시장과 농협 하나로마트를 픽업 거점 후보로 넣었습니다. 오일장은 장날(예: 제주시 민속오일시장 2·7일)에 맞춰 픽업을 잡으면 좋습니다.'},
  {cat:'혼디마켓',q:'공구는 어떻게 여나요?',k:['공구열기','공구개설','공구만들','팟장되','열고싶'],a:'혼디마켓 화면의 "＋ 공구 열기"를 누르고 상품, 카테고리, 지역, 가격, 배송비, 목표 인원, 모집 기간, 픽업 거점을 입력하면 됩니다. 연 사람은 팟장이 되고, 먼저 결제한 뒤 이웃을 기다립니다.'},
- {cat:'모당식탁',q:'호스트와 공유주방은 무엇인가요?',k:['호스트','공유주방','주방','모두의식탁','수다공유주방','대관'],a:'호스트는 식탁(모임)을 연 사람으로, 공유주방을 예약하고 메뉴와 재료를 준비합니다. 공유주방은 시간을 나눠 빌려 쓰는 주방입니다. 지금은 실제로 있는 제주소통협력센터 "모두의식탁"(제주시 관덕로)과 안덕면 "수다공유주방"을 예시로 보여 주며, 아직 제휴 전입니다.'},
+ {cat:'모당식탁',q:'호스트와 공유주방은 무엇인가요?',k:['호스트','공유주방','주방','모두의식탁','수다공유주방','대관'],a:'호스트는 식탁(모임)을 연 사람으로, 공유주방을 예약하고 메뉴와 재료를 준비합니다. 공유주방은 시간을 나눠 빌려 쓰는 주방입니다. 지금은 실제로 있는 제주소통협력센터 "모두의식탁"(제주시 관덕로)과 안덕면 "수다공유주방"을 예시로 보여 줍니다.'},
  {cat:'모당식탁',q:'식탁에 참여하려면 어떻게 하나요?',k:['식탁참여','모임참여','참여방법','참여하려','식탁신청'],a:'모당식탁에서 마음에 드는 식탁을 눌러 "참여하기"를 누르고 재료비를 결제하면 됩니다. 참여하면 일정이 캘린더에 자동으로 들어가고 단체 채팅방이 열립니다.'},
  {cat:'결제·취소',q:'어떤 결제 수단을 쓸 수 있나요?',k:['결제수단','카드','카드결제','결제카드','카카오페이','토스','페이','수단'],a:'카카오페이, 토스페이, 신용·체크카드로 결제할 수 있습니다. 모은 포인트는 결제 금액의 10%까지 함께 쓸 수 있습니다. (체험 모드에서는 실제 결제가 일어나지 않습니다.)'},
  {cat:'결제·취소',q:'환불은 언제 되나요?',k:['환불','언제환불','돌려받','환불시점'],a:'공구는 마감 전날까지 취소하거나 목표 인원이 모이지 않으면, 식탁은 모임 전날까지 취소하면 결제한 금액 전액이 환불됩니다. 사용한 포인트도 함께 돌려받습니다.'},
@@ -761,7 +762,6 @@ function migrate(w){(w.users||[]).forEach(u=>{if(!DEMO_MODE&&(u.seed||u.id==='u_
   (w.dining||[]).forEach(i=>{if(OLD_SPACE_ID[i.spaceId])i.spaceId=OLD_SPACE_ID[i.spaceId];if(!DINING_CATS.includes(i.cat))i.cat='한식';});
   Object.values(w.chats||{}).forEach(list=>list.forEach(m=>{m.text=String(m.text);OLD_SPACE_TEXT.forEach(k=>{m.text=m.text.split(k).join('청년공간 주방');});Object.keys(OLD_PLACE).forEach(k=>{m.text=m.text.split(k).join(OLD_PLACE[k]);});}));
   return w;}
-const PARTNER_TAG='<span class="tag gray" title="실제로 있는 장소이며 아직 제휴하지 않은 예시입니다.">🤝 실제 장소 · 제휴 전</span>';
 const isSeedPlace=n=>REAL_PLACES.has(n);
 function addPts(uid,amt,reason){const u=userById(uid);if(!u||!amt)return;ext(u);u.points=Math.max(0,u.points+amt);S.pointLog.unshift({uid,amt,reason,ts:Date.now()});if(S.pointLog.length>400)S.pointLog.length=400;}
 
@@ -1291,7 +1291,7 @@ function mDetailHtml(){
     <div class="card" style="margin-top:14px"><h3>💸 배송비 1/N 비교</h3>${bar('혼자 구매',solo,'solo')}${bar(`지금 ${Math.max(n,1)}명`,now,'share')}${bar(`${i.goal}명 달성`,goal,'share')}
       <div class="muted"><span class="nw">1인 배송비 <b>${won(perHead(i,Math.max(n,1)))}</b></span> · <span class="nw"><b style="color:var(--green-d)">${won(saveNow)}</b> 절약 (${Math.round(saveNow/i.ship*100||0)}%)</span></div></div>
     <div class="stepper">${steps}</div>
-    <div class="info-box"><b>📍 소분 픽업</b><span class="nw">${esc(i.pickupName)}</span> <span class="muted nw">(${esc(i.region)}${MARKET_DAYS[i.pickupName]?' · '+MARKET_DAYS[i.pickupName]:''})</span><br><span class="nw">🕕 ${esc(i.pickupTime)}</span>${isSeedPlace(i.pickupName)?`<div style="margin-top:6px">${PARTNER_TAG}</div>`:''}</div>
+    <div class="info-box"><b>📍 소분 픽업</b><span class="nw">${esc(i.pickupName)}</span> <span class="muted nw">(${esc(i.region)}${MARKET_DAYS[i.pickupName]?' · '+MARKET_DAYS[i.pickupName]:''})</span><br><span class="nw">🕕 ${esc(i.pickupTime)}</span></div>
     ${body}
     <details class="policy"><summary>💳 결제 · 취소 안내</summary><div style="margin-top:6px">결제금액은 혼디가 보관(에스크로)하고 픽업 확인 후 정산됩니다.<br>• 참여 취소는 <b>모집 마감일 전날까지</b> 가능 (마감 당일·발주 후 불가)<br>• 마감까지 목표 미달이면 <b>자동 전액 환불</b></div></details>
     ${act}${demo}
@@ -1344,7 +1344,7 @@ function mNewHtml(){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${fld('분류',sel('m_cat',CATS,D.m_cat))}${fld('픽업 지역',`<select data-in="m_region" data-on="pay-repaint">${regionOptions(D.m_region)}</select>`)}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${fld('상품가(1인분)',inp('m_price',{mode:'numeric',fmt:'digits',max:6,ph:'5900'}))}${fld('총 배송비',inp('m_ship',{mode:'numeric',fmt:'digits',max:5,ph:'4000'}))}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${fld('목표 인원(2~10)',inp('m_goal',{mode:'numeric',fmt:'digits',max:2,ph:'5'}))}${fld('모집 기간(일)',sel('m_days',['1','2','3','4','5','6','7'],D.m_days))}</div>
-    ${(()=>{const pl=PICKUP_PLACES[D.m_region]||[];return fld('소분 픽업 거점',inp('m_pn',{max:24,ph:pl.length?'아래에서 고르거나 직접 입력':'예) ○○마트'}),pl.length?`<div class="chip-row" style="flex-wrap:wrap;padding-top:8px">${pl.map(n=>`<button type="button" class="chip ${D.m_pn===n?'on':''}" data-a="set-draft" data-k="m_pn" data-v="${esc(n)}">${esc(n)}</button>`).join('')}</div><span>${esc(D.m_region)}에 실제로 있는 시장·마트입니다 (제휴 전).</span>`:'');})()}
+    ${(()=>{const pl=PICKUP_PLACES[D.m_region]||[];return fld('소분 픽업 거점',inp('m_pn',{max:24,ph:pl.length?'아래에서 고르거나 직접 입력':'예) ○○마트'}),pl.length?`<div class="chip-row" style="flex-wrap:wrap;padding-top:8px">${pl.map(n=>`<button type="button" class="chip ${D.m_pn===n?'on':''}" data-a="set-draft" data-k="m_pn" data-v="${esc(n)}">${esc(n)}</button>`).join('')}</div>`:'');})()}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${fld('픽업일 (마감 며칠 뒤)',sel('m_pdays',['1','2','3','4','5','6','7'],D.m_pdays))}${fld('픽업 가능 시간',inp('m_pt',{max:30,ph:'예) 18:00~20:00'}))}</div>
     <div class="muted" style="margin-top:-4px">📅 마감일과 픽업일은 참여자 캘린더에 자동으로 들어갑니다.</div>
     ${fld('설명',`<textarea data-in="m_desc" rows="2" maxlength="120" placeholder="간단히 소개해 주세요.">${esc(D.m_desc||'')}</textarea>`)}
@@ -1428,7 +1428,7 @@ function dDetailHtml(){
   return `<div class="m-card"><div class="top"><div class="tile g">${esc(i.emoji)}</div><div class="t"><h2 style="font-size:19px">${esc(i.title)}</h2><span class="muted">${fmtDate(i.date)} ${i.time} · ${i.cost?won(i.cost):'무료'}</span></div></div></div>
     <p style="margin:10px 0">${esc(i.desc)}</p>
     <div class="info-box"><b>🍽️ 메뉴</b>${esc(i.menu)}<div class="muted" style="margin-top:4px">🥗 못 먹는 음식은 단체 채팅으로 미리 알려 주세요.</div></div>
-    <div class="info-box"><b>${sp.emoji} ${esc(sp.name)}</b><span class="muted">${esc(sp.org)} · ${esc(sp.addr)}</span><div class="muted" style="margin-top:4px">${segs(sp.tools.map(esc))}<br>${segs(sp.note.split(' · ').map(esc))}</div><div style="margin-top:6px">${PARTNER_TAG}</div></div>
+    <div class="info-box"><b>${sp.emoji} ${esc(sp.name)}</b><span class="muted">${esc(sp.org)} · ${esc(sp.addr)}</span><div class="muted" style="margin-top:4px">${segs(sp.tools.map(esc))}<br>${segs(sp.note.split(' · ').map(esc))}</div></div>
     <div class="person" data-a="profile" data-id="${i.hostId}" style="cursor:pointer;margin:8px 0">${avatar(host)}<span class="info"><b>호스트 ${esc(dispName(host))} <span class="tag gray" data-a="terms" data-k="d" style="cursor:pointer">호스트란?</span></b><small>${host&&host.type?typePill(host.type):''} ${host&&!host.deleted?tempTag(host):''}</small></span><span class="muted">›</span></div>
     <div class="progress ${n>=i.cap?'done':''}"><i style="width:${Math.round(n/i.cap*100)}%"></i></div><div class="prog-meta"><span>${n}/${i.cap}명</span><span>${n>=i.cap?'마감':`${i.cap-n}자리 남음`}</span></div>
     ${ticket}
@@ -1452,7 +1452,6 @@ function dNewHtml(){
   const slots=SLOTS.map(s=>{const taken=D.d_space&&Srv.slotTaken(D.d_space,D.d_date,s),passed=D.d_date===t&&s<=nowHM;
     return `<button type="button" class="chip ${D.d_time===s?'on':''} ${taken||passed?'disabled':''}" data-a="set-draft" data-k="d_time" data-v="${s}">${s}${taken?' (예약됨)':passed?' (지남)':''}</button>`;}).join('');
   return `<h2 class="title">식탁 열기</h2><p class="muted">공유주방을 예약하고 이웃을 초대합니다. 같은 공간·시간은 한 팀만 예약할 수 있습니다.</p>
-    <div class="notice info">🤝 아래는 실제로 있는 공유주방이며 아직 제휴 전입니다. 대관 조건은 운영처 기준을 따릅니다.</div>
     ${fld('이모지',emojiPick('d_emoji',DINING_EMOJI,D.d_emoji))}
     ${fld('모임 이름',inp('d_title',{max:30,ph:'예) 고사리 육개장 끓이는 날'}))}
     ${fld('음식 종류',sel('d_cat',DINING_CATS,D.d_cat))}
@@ -1483,7 +1482,7 @@ function profileHtml(){
   return `<div style="text-align:center;margin-top:8px">${avatar(x,'lg')}<h2 style="margin-top:8px">${esc(dispName(x))}</h2>
     <div style="margin:6px 0">${x.type?typePill(x.type):'<span class="tag gray">성향 미진단</span>'} ${isRestricted(x)?'<span class="tag red">이용 제한 중</span>':''}</div>
     <div>${tempTag(x)} · <span class="muted">${esc(x.region||'')}</span></div>
-    <div class="muted" style="font-size:12px;margin-top:4px">수눌음은 이웃끼리 일손을 주고받던 제주식 품앗이입니다.</div>
+    <div class="snl-box"><b>🤝 수눌음 지수란?</b>약속을 잘 지킬수록 오르는 이웃 신뢰 점수입니다.<br>픽업·모임을 지키면 오르고, 노쇼하면 내려갑니다.<small>수눌음: 이웃끼리 일손을 주고받던 제주식 품앗이</small></div>
     ${x.type?`<p class="muted" style="margin:12px 0">${esc(TYPES[x.type].desc)}</p>`:''}</div>
     ${praiseHtml(x)}
     <div class="muted" style="text-align:center;margin-top:10px">가입 ${Math.max(1,Math.round((Date.now()-x.createdAt)/DAY))}일째 · 연락처·실명은 공개되지 않습니다.</div>
@@ -2355,10 +2354,10 @@ function csOpen(d){d=d||new Date();const w=d.getDay(),h=d.getHours();return w>=1
 /* 용어 안내 */
 const TERMS={m:[['👑','팟장','공구를 처음 연 사람입니다. 상품을 주문하고, 물건이 도착하면 시장·마트에서 1인분씩 나눠 담아 이웃에게 건네줍니다. 팟장도 똑같이 결제하고 참여합니다.'],
   ['📦','소분 픽업','큰 묶음으로 산 물건을 1인분씩 나눠 담은 뒤, 정해진 시장·마트에서 각자 받아 가는 방식입니다. 받을 때 앱의 QR 코드나 6자리 코드를 팟장에게 보여 줍니다.'],
-  ['📍','픽업 거점','소분한 물건을 받아 가는 동네 시장·마트입니다. 지금 보이는 곳은 실제로 있는 장소이며 아직 제휴 전입니다.'],
+  ['📍','픽업 거점','소분한 물건을 받아 가는 동네 시장·마트입니다.'],
   ['🚚','배송비 1/N','한 번에 주문해서 배송비를 참여 인원수로 나눠 냅니다. 사람이 많을수록 한 사람이 내는 배송비가 줄어듭니다.']],
  d:[['🧑‍🍳','호스트','식탁(모임)을 연 사람입니다. 공유주방을 예약하고 메뉴와 재료를 준비해 모임을 이끕니다.'],
-  ['🍽️','공유주방','여러 사람이 시간을 나눠 빌려 쓰는 주방입니다. 지금 보이는 곳은 실제로 있는 공간이며 아직 제휴 전입니다. 대관 조건은 운영처 기준을 따릅니다.'],
+  ['🍽️','공유주방','여러 사람이 시간을 나눠 빌려 쓰는 주방입니다. 대관 조건은 운영처 기준을 따릅니다.'],
   ['🥕','재료비','메뉴 재료를 참여 인원이 나눠 내는 금액입니다. 남은 음식은 함께 나눠 가져갑니다.']],
  all:[['💳','결제금 보관','낸 돈을 혼디가 잠시 보관했다가, 공구는 픽업이 끝나면, 식탁은 모임이 끝나면 정산합니다. 이웃끼리 직접 송금하지 않습니다.'],
   ['🤝','수눌음 지수','수눌음은 이웃끼리 일손을 주고받던 제주식 품앗이입니다. 약속을 얼마나 잘 지키는지 보여 주는 신뢰 지표로, 10에서 시작해 픽업·모임을 잘 마치면 3, 좋은 후기를 받으면 1씩 오릅니다. 노쇼는 20, 아쉬운 후기는 2가 내려갑니다.']]};
