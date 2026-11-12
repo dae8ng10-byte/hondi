@@ -225,7 +225,7 @@ details.policy summary:after{content:' ▾';font-weight:400}details.policy[open]
 .snl-box{margin:12px auto 0;max-width:340px;background:var(--green-l);border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.55;color:var(--ink);text-align:center}.snl-box b{display:block;color:var(--green-d);margin-bottom:2px;font-size:13px}.snl-box small{display:block;margin-top:4px;color:var(--ink2);font-size:11.5px}
 .page-lead{color:var(--ink2);font-size:13.5px;margin:12px 2px 10px}
 .lc{padding:14px 16px}.lc-top{display:flex;gap:12px;align-items:center}.lc-main{flex:1;min-width:0}
-.lc-title{display:block;font-size:16px;line-height:1.35}.lc-sub{font-size:13px;color:var(--ink2);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-title{display:block;font-size:16px;line-height:1.35}.lc-sub{font-size:13px;color:var(--ink2);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lc-region{margin-left:auto;font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .lc-price{display:flex;align-items:center;gap:8px;margin:12px 0 8px}.lc-price b{font-size:18px}
 .lc-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--ink2);margin-top:8px}
 /* 식탁 */
@@ -876,6 +876,13 @@ const Srv={
     if(w){const days=Math.ceil((w.until-Date.now())/DAY);
       bad(w.sanctioned?`이용 제한 이력이 있어 재가입이 제한됩니다. ${fmtMD(w.until)} 이후에 다시 시도해 주세요. (${days}일 남음)`:`탈퇴 후 ${REJOIN_DAYS}일이 지나야 재가입할 수 있습니다. ${fmtMD(w.until)}부터 가능합니다. (${days}일 남음)`,'rejoin_wait');}
     SIGNUP.di=di;SIGNUP.nameMasked=name.length>2?name[0]+'*'.repeat(name.length-2)+name[name.length-1]:name[0]+'*';SIGNUP.birthYear=y;return true;},
+  updateProfile(p){const u=needUser();const nick=String(p.nickname||'').trim();
+    if(!/^[\p{L}\p{N}_]{2,10}$/u.test(nick))bad('닉네임은 2~10자의 글자·숫자·_ 만 쓸 수 있습니다.');
+    if(nick!==u.nickname){if(RESERVED_NICK.some(w=>nick.toLowerCase().includes(w)))bad('사용할 수 없는 닉네임입니다.');Mod.must(nick,'닉네임');
+      if(S.users.some(x=>x.id!==u.id&&!x.deleted&&x.nickname.toLowerCase()===nick.toLowerCase()))bad('이미 사용 중인 닉네임입니다.');}
+    if(!REGIONS.includes(p.region))bad('활동 지역을 선택해 주세요.');
+    if(!USER_EMOJI.includes(p.emoji))bad('프로필 이모지를 골라 주세요.');
+    Object.assign(u,{nickname:nick,region:p.region,emoji:p.emoji});save();return u;},
   signup(p){if(!SIGNUP||!SIGNUP.di)bad('본인확인부터 진행해 주세요.');
     if(!(p.agreeTerms&&p.agreePrivacy&&p.age14))bad('필수 약관에 모두 동의해 주세요.');
     const nick=String(p.nickname||'').trim();
@@ -1138,6 +1145,7 @@ const fld=(label,inner,hint)=>`<div class="field"><label>${label}</label>${inner
 const inp=(key,o)=>{o=o||{};return `<input data-in="${key}" value="${esc(DRAFT[key]||'')}" ${o.type?`type="${o.type}"`:''} ${o.ph?`placeholder="${esc(o.ph)}"`:''} ${o.max?`maxlength="${o.max}"`:''} ${o.mode?`inputmode="${o.mode}"`:''} ${o.fmt?`data-fmt="${o.fmt}"`:''} ${o.enter?`data-enter="${o.enter}"`:''} ${o.ac?`autocomplete="${o.ac}"`:'autocomplete="off"'}>`;};
 const sel=(key,opts,cur,on)=>`<select data-in="${key}" ${on?`data-on="${on}"`:''}>${opts.map(o=>`<option ${String(o)===String(cur)?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
 const chk=(key,label,o)=>`<label class="check"><input type="checkbox" data-in="${key}" ${DRAFT[key]?'checked':''} ${o&&o.on?`data-on="${o.on}"`:''}><span>${label}</span></label>`;
+const emoPick=key=>`<div class="emo-pick">${USER_EMOJI_GROUPS.map(([g,l])=>`<div class="emo-sec"><div class="emo-g">${g}</div><div class="emo-grid">${l.map(e=>`<button type="button" class="${e===DRAFT[key]?'on':''}" data-a="set-draft" data-k="${key}" data-v="${esc(e)}" aria-label="${esc(e)}">${e}</button>`).join('')}</div></div>`).join('')}</div>`;
 const emojiPick=(key,list,cur)=>`<div class="emoji-row">${list.map(e=>`<button type="button" class="chip ${e===cur?'on':''}" data-a="set-draft" data-k="${key}" data-v="${esc(e)}">${e}</button>`).join('')}</div>`;
 A['set-draft']=el=>{DRAFT[el.dataset.k]=el.dataset.v;const ep=$('.emo-pick'),st=ep?ep.scrollTop:0;refreshSheet();const ep2=$('.emo-pick');if(ep2)ep2.scrollTop=st;};
 const payPick=cur=>`<div class="chip-row" style="flex-wrap:wrap">${PAY_METHODS.map(m=>`<button type="button" class="chip ${m===cur?'on':''}" data-a="set-draft" data-k="method" data-v="${m}">${m}</button>`).join('')}</div>`;
@@ -1172,7 +1180,7 @@ function authHtml(){
   return `${head('프로필 만들기','이웃에게는 닉네임과 이모지만 보입니다.')}
     ${fld('닉네임',inp('nick',{ph:'2~10자 (글자·숫자)',max:10,enter:'auth-signup'}))}
     ${fld('활동 지역',`<select data-in="region">${regionOptions(DRAFT.region)}</select>`,'동 지역은 가까운 동끼리 생활권으로 묶었습니다.')}
-    ${fld('프로필 이모지',`<div class="emo-pick">${USER_EMOJI_GROUPS.map(([g,l])=>`<div class="emo-sec"><div class="emo-g">${g}</div><div class="emo-grid">${l.map(e=>`<button type="button" class="${e===DRAFT.emoji?'on':''}" data-a="set-draft" data-k="emoji" data-v="${esc(e)}" aria-label="${esc(e)}">${e}</button>`).join('')}</div></div>`).join('')}</div>`)}
+    ${fld('프로필 이모지',emoPick('emoji'))}
     <div style="margin-top:8px">
       <label class="check all"><input type="checkbox" data-a="auth-all" ${(DRAFT.agreeTerms&&DRAFT.agreePrivacy&&DRAFT.age14&&DRAFT.marketing)?'checked':''}><span>전체 동의</span></label>
       ${chk('agreeTerms','(필수) <a class="link" data-a="legal" data-k="terms">이용약관</a> 동의',{on:'auth-repaint'})}
@@ -1242,8 +1250,8 @@ function mCard(i){
   const status=i.stage===1?(left?`${left}명 더 모이면 주문합니다.`:'인원이 모두 모였습니다.'):STAGES[i.stage-1];
   return `<div class="card tap lc" data-a="m-open" data-id="${i.id}">
     <div class="lc-top"><div class="tile">${esc(i.emoji)}</div><div class="lc-main"><b class="lc-title">${esc(i.title)}</b>
-      <div class="lc-sub">📍 ${esc(i.pickupName)} · ${esc(i.region)}</div></div>${mStatusTag(i)}</div>
-    <div class="lc-price"><b>${won(mAmount(i))}</b><span class="save-chip">배송비 ${won(saved)} 아낌</span></div>
+      <div class="lc-sub">📍 ${esc(i.pickupName)}</div></div>${mStatusTag(i)}</div>
+    <div class="lc-price"><b>${won(mAmount(i))}</b><span class="save-chip">배송비 ${won(saved)} 아낌</span><span class="lc-region">${esc(i.region)}</span></div>
     <div class="progress ${n>=i.goal?'done':''}" style="height:8px"><i style="width:${pct}%"></i></div>
     <div class="lc-foot"><span>${n}/${i.goal}명 · ${status}</span>${mine?'<span class="tag g">참여 중</span>':''}</div></div>`;
 }
@@ -1957,17 +1965,27 @@ Views.my=()=>{
   const active=S.market.filter(i=>mActive(i)&&isMember(i,u.id)).length+S.dining.filter(i=>dActive(i)&&i.date>=todayStr()&&isMember(i,u.id)).length;
   const praiseN=Object.values(u.praise||{}).reduce((a,b)=>a+b,0);
   const group=(t,items)=>`<div class="sec" style="margin-top:20px"><h3 class="mg-title">${t}</h3><div class="mg">${items}</div></div>`;
-  return `<div class="card" style="margin-top:6px"><div class="person">${avatar(u,'lg')}<span class="info"><b style="font-size:18px">${esc(u.nickname)}</b><small>${segs([esc(u.region),maskPhone(u.phone)])}</small><span>${u.type?typePill(u.type):''}</span></span><button class="chip" data-a="profile" data-id="${u.id}">내 프로필</button></div>
+  return `<div class="card" style="margin-top:6px"><div class="person"><span data-a="profile" data-id="${u.id}" style="cursor:pointer">${avatar(u,'lg')}</span><span class="info" data-a="profile" data-id="${u.id}" style="cursor:pointer"><b style="font-size:18px">${esc(u.nickname)}</b><small>📍 ${esc(u.region)}<br>📱 ${maskPhone(u.phone)}</small><span>${u.type?typePill(u.type):''}</span></span><button class="chip" data-a="pe-open">✏️ 수정</button></div>
     ${isRestricted(u)?`<div class="notice red">⛔ 이용 제한 중입니다 (${fmtMD(u.restrictedUntil)}까지).</div>`:''}
     <div class="my-stats"><button data-a="profile" data-id="${u.id}"><b>${stoneOf(u)}</b><span>🤝 수눌음</span></button><button data-a="pts-open"><b>${u.points.toLocaleString()}P</b><span>포인트</span></button><button data-a="my-activity"><b>${active}건</b><span>참여 중</span></button></div></div>
     ${u.role==='admin'?`<div class="mg" style="margin-top:12px">${myItem('go-admin','🛡️','운영자 화면','신고 · 문의 · 평가 · 지역 수요')}</div>`:''}
     ${group('나의 활동',myItem('my-activity','🧾','참여 중인 공구 · 식탁',`${active}건`)+myItem('go-cal','📅','캘린더',`출석 ${streakOf(u)}일 연속 · 내 일정 ${u.events.length}개`)+myItem('pay-list','💳','결제 내역','보관 · 정산 · 환불 상태')+myItem('profile','💐','받은 칭찬',`${praiseN}개`,`data-id="${u.id}"`))}
     ${group('혜택',myItem('pts-open','🪙','포인트',`${u.points.toLocaleString()}P 보유`)+myItem('pet-open','🐾','혼디 친구',u.pet?`${esc(u.pet.name)} · Lv.${petLevel(u.pet.exp).lv}`:'아직 함께하는 친구가 없습니다.'))}
-    ${group('설정',myItem('quiz-start','🧭','생활 성향 테스트',u.type?TYPES[u.type].name:'아직 진단 전')+myItem('blocked-open','🚫','차단 관리',`${u.blocked.length}명`)
+    ${group('설정',myItem('pe-open','✏️','프로필 수정','닉네임 · 이모지 · 활동 지역')+myItem('quiz-start','🧭','생활 성향 테스트',u.type?TYPES[u.type].name:'아직 진단 전')+myItem('blocked-open','🚫','차단 관리',`${u.blocked.length}명`)
       +(DEMO_MODE?`<label class="mi"><span class="mi-e">🛠</span><span class="mi-t"><b>시연 도구 보이기</b><small>인원 채우기 · 단계 진행 버튼</small></span><input type="checkbox" data-in="demoTools" ${S.settings.demoTools?'checked':''} data-on="toggle-demo" style="width:22px;height:22px;accent-color:var(--orange)"></label>`:''))}
     ${group('고객지원',myItem('help-open','💬','도우미 · 1:1 문의','평일 10:00~18:00 답변')+myItem('legal-terms','📄','이용약관')+myItem('legal-priv','🔒','개인정보 처리 안내'))}
     ${group('계정',myItem('logout','🚪','로그아웃')+myItem('reset-ask','🔄','체험 예시 처음으로','계정·포인트는 그대로 두고 예시만 되돌립니다')+myItem('withdraw-ask','⚠️','회원 탈퇴',`탈퇴 후 ${REJOIN_DAYS}일 동안 재가입할 수 없습니다.`))}`;
 };
+function peHtml(){
+  const err=UI.peErr?`<div class="notice red" role="alert">${esc(UI.peErr)}</div>`:'';
+  return `<h2 class="title">✏️ 프로필 수정</h2><p class="muted">이웃에게는 닉네임과 이모지만 보입니다.</p>
+    ${fld('닉네임',inp('pe_nick',{ph:'2~10자 (글자·숫자)',max:10,enter:'pe-save'}))}
+    ${fld('활동 지역',`<select data-in="pe_region">${regionOptions(DRAFT.pe_region)}</select>`)}
+    ${fld('프로필 이모지',emoPick('pe_emoji'))}${err}
+    <button class="btn primary block" data-a="pe-save">저장하기</button>`;}
+A['pe-open']=guard(()=>{const u=me();Object.assign(DRAFT,{pe_nick:u.nickname,pe_region:u.region,pe_emoji:u.emoji});UI.peErr='';openSheet(peHtml,'pe');});
+A['pe-save']=guard(()=>{try{Srv.updateProfile({nickname:DRAFT.pe_nick,region:DRAFT.pe_region,emoji:DRAFT.pe_emoji});UI.peErr='';closeSheet();toast('프로필을 저장했습니다.');paint(true);}
+  catch(e){UI.peErr=e.message;refreshSheet();}});
 function myItem(a,e,l,sub,extra){return `<button class="mi" data-a="${a}" ${extra||''}><span class="mi-e" aria-hidden="true">${e}</span><span class="mi-t"><b>${l}</b>${sub?`<small>${sub}</small>`:''}</span><span class="mi-c" aria-hidden="true">›</span></button>`;}
 A['my-activity']=()=>{if(!requireLogin())return;openSheet(()=>`<h2 class="title">🧾 참여 중인 공구 · 식탁</h2><div style="margin-top:12px">${myActivity()}</div>`,'myact');};
 A['go-admin']=()=>go('admin');
@@ -2109,8 +2127,8 @@ function evRow(e){
     e.host?'<span class="tag">내가 연 약속</span>':'',e.tentative?'<span class="tag gray">목표 달성 시 확정</span>':'',e.done?'<span class="tag g">픽업 완료</span>':''].join('');
   return `<div class="ev" style="--c:${EV_COLOR[e.kind]}"><span style="font-size:24px" aria-hidden="true">${esc(e.emoji)}</span>
     <div class="t" ${e.auto?`data-a="${e.kind==='dining'?'d-open':'m-open'}" data-id="${e.id}" style="cursor:pointer"`:''}><b>${esc(e.title)}</b>
-    <div class="muted">${segs([EV_LABEL[e.kind],e.time||'시간 미정',e.place&&esc(e.place)])}</div><div class="tags">${tags}</div>${e.memo?`<div class="muted" style="margin-top:4px">📝 ${esc(e.memo)}</div>`:''}</div>
-    ${e.trip?`<button class="chip" data-a="trip-start" data-key="${e.tripKey}">🚶 같이 가기</button>`:''}${!e.auto?`<button class="chip" data-a="ev-del" data-id="${e.id}" aria-label="일정 삭제">✕</button>`:''}</div>`;
+    <div class="muted">${segs([EV_LABEL[e.kind],e.time||'시간 미정',e.place&&esc(e.place)])}</div><div class="tags">${tags}${e.trip?`<button class="chip" style="padding:4px 10px;font-size:12.5px" data-a="trip-start" data-key="${e.tripKey}">🚶 같이 가기</button>`:''}</div>${e.memo?`<div class="muted" style="margin-top:4px">📝 ${esc(e.memo)}</div>`:''}</div>
+    ${!e.auto?`<button class="chip" data-a="ev-del" data-id="${e.id}" aria-label="일정 삭제">✕</button>`:''}</div>`;
 }
 
 /* ----- 홈 카드: 혼디 친구 · 출석체크 ----- */
