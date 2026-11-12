@@ -204,6 +204,7 @@ h3{font-size:16px;font-weight:700}
 .mi:last-child{border-bottom:0}.mi-e{font-size:20px;width:26px;text-align:center;flex-shrink:0}
 .mi-t{flex:1;min-width:0}.mi-t b{display:block;font-size:15px;font-weight:700}.mi-t small{display:block;color:var(--ink2);font-size:12.5px;margin-top:1px}
 .mi-c{color:var(--ink2);font-size:18px}
+.seg.adm button{font-size:13px;padding:9px 2px}
 .my-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
 .my-stats button{background:var(--soft);border-radius:14px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px}
 .my-stats b{font-size:16px}.my-stats span{font-size:12px;color:var(--ink2)}
@@ -992,6 +993,24 @@ const Srv={
     if(action==='warn'){adjTemp(r.targetUser,-1);}else if(action==='suspend'){restrict(r.targetUser,7*DAY);adjTemp(r.targetUser,-2);}
     r.status=action==='dismiss'?'dismiss':action;r.handledAt=Date.now();save();},
   adminUnrestrict(uid){Srv.adminOnly();const u=userById(uid);if(u)u.restrictedUntil=0;save();},
+  /* 테스트 계정 정리: 계정과 그 계정이 남긴 기록을 이 기기에서 완전히 지워요 (재가입 제한 없음) */
+  adminDeleteUsers(ids){const a=Srv.adminOnly();ids=(ids||[]).filter(id=>{const u=userById(id);return u&&!u.seed&&u.role!=='admin'&&id!=='u_demo';});
+    if(!ids.length)bad('지울 계정을 골라 주세요');const del=new Set(ids);
+    const hosted=new Set([...S.market,...S.dining].filter(i=>del.has(i.hostId)).map(i=>i.id));
+    S.market=S.market.filter(i=>!hosted.has(i.id));S.dining=S.dining.filter(i=>!hosted.has(i.id));
+    [...S.market,...S.dining].forEach(i=>{const before=i.members.length;i.members=i.members.filter(m=>!del.has(m.uid));
+      if(i.members.length!==before&&i.stage===2&&i.members.length<i.goal)i.stage=1;});
+    hosted.forEach(id=>delete S.chats[id]);Object.keys(S.chats).forEach(k=>{S.chats[k]=S.chats[k].filter(m=>!del.has(m.uid));});
+    S.payments=S.payments.filter(p=>!del.has(p.uid)&&!hosted.has(p.itemId));
+    S.reviews=S.reviews.filter(r=>!del.has(r.by)&&!del.has(r.to)&&!hosted.has(r.item));
+    S.reports=S.reports.filter(r=>!del.has(r.by)&&!del.has(r.targetUser));
+    S.inquiries=S.inquiries.filter(q=>!del.has(q.uid));S.pointLog=S.pointLog.filter(l=>!del.has(l.uid));
+    Object.values(S.demand||{}).forEach(d=>ids.forEach(id=>delete d[id]));
+    Object.keys(S.chatFlags||{}).forEach(k=>{if(ids.some(id=>k.endsWith('|'+id)))delete S.chatFlags[k];});
+    const phones=S.users.filter(u=>del.has(u.id)).map(u=>u.phone);
+    S.users=S.users.filter(u=>!del.has(u.id));S.users.forEach(u=>{u.blocked=(u.blocked||[]).filter(x=>!del.has(x));});
+    try{localStorage.setItem(RECENT_KEY,JSON.stringify(recentLogins().filter(p=>!phones.includes(p))));}catch(e){}
+    saveNow();return{n:ids.length,items:hosted.size};},
   adminAnswer(qid,text){Srv.adminOnly();const q=S.inquiries.find(x=>x.id===qid);if(!q)bad('문의를 찾을 수 없습니다.');text=String(text||'').trim();if(text.length<2)bad('답변을 입력해 주세요.');q.answer=text;q.answeredAt=Date.now();save();},
 
   /* ===== 자동 정리 (마감 지난 공구 환불 · 끝난 식탁 정산) ===== */
@@ -1939,7 +1958,7 @@ A['reset-ask']=()=>ask({title:'체험 예시를 처음으로 돌릴까요?',body
 const RTYPE={user:'이웃',market:'공구',dining:'식탁',message:'채팅 메시지'};
 Views.admin=()=>{
   const u=me();if(!u||u.role!=='admin')return '<div class="empty"><b>🔒</b>권한이 없습니다.</div>';
-  const tabs=[['reports','신고'],['inq','문의'],['rev','평가'],['demand','수요'],['users','제한']];
+  const tabs=[['reports','신고'],['inq','문의'],['rev','평가'],['demand','수요'],['users','제한'],['accts','계정']];
   const open=S.reports.filter(r=>r.status==='open').length,noans=S.inquiries.filter(q=>!q.answer).length;
   let body='';
   if(UI.atab==='reports')body=S.reports.map(r=>{const t=userById(r.targetUser),by=userById(r.by);
@@ -1951,14 +1970,29 @@ Views.admin=()=>{
       ${q.answer?`<div class="notice ok">${esc(q.answer)}</div>`:`<div class="chat-input" style="border:0;padding:0"><input data-in="ans_${q.id}" placeholder="답변 입력" maxlength="200" value="${esc(DRAFT['ans_'+q.id]||'')}"><button class="btn green" data-a="adm-ans" data-id="${q.id}">답변</button></div>`}</div>`;}).join('')||'<div class="empty"><b>📭</b>문의가 없습니다.</div>';
   else if(UI.atab==='demand')body=adminDemandHtml();
   else if(UI.atab==='rev')body=adminReviewHtml();
+  else if(UI.atab==='accts')body=adminAccountsHtml();
   else body=S.users.filter(x=>isRestricted(x)).map(x=>`<div class="roster"><span class="person">${avatar(x)}<span class="info"><b>${esc(dispName(x))}</b><small>${fmtMD(x.restrictedUntil)}까지 제한</small></span></span><button class="chip" data-a="adm-unr" data-id="${x.id}">제한 해제</button></div>`).join('')||'<div class="empty"><b>🙂</b>제한 중인 이용자가 없습니다.</div>';
   return `<h1 style="margin-top:6px">🛡️ 운영자 화면</h1><p class="muted">미처리 신고 ${open}건 · 미답변 문의 ${noans}건</p>
-    <div class="seg" style="margin-top:10px">${tabs.map(([k,l])=>`<button class="${UI.atab===k?'on':''}" data-a="adm-tab" data-t="${k}">${l}</button>`).join('')}</div>${body}`;
+    <div class="seg adm" style="margin-top:10px">${tabs.map(([k,l])=>`<button class="${UI.atab===k?'on':''}" data-a="adm-tab" data-t="${k}">${l}</button>`).join('')}</div>${body}`;
 };
 A['adm-tab']=el=>{UI.atab=el.dataset.t;paint(true);};
 A['adm-res']=guard(el=>{Srv.adminResolve(el.dataset.id,el.dataset.act);toast('처리했습니다.');paint(true);});
 A['adm-ans']=guard(el=>{Srv.adminAnswer(el.dataset.id,DRAFT['ans_'+el.dataset.id]);toast('답변을 등록했습니다.');paint(true);});
 A['adm-unr']=guard(el=>{Srv.adminUnrestrict(el.dataset.id);toast('제한을 해제했습니다.');paint(true);});
+const ADM_SEL=new Set();
+function adminAccountsHtml(){const list=S.users.filter(u=>!u.seed&&u.role!=='admin'&&u.id!=='u_demo'&&!u.deleted).sort((a,b)=>b.createdAt-a.createdAt);
+  [...ADM_SEL].forEach(id=>{if(!list.some(u=>u.id===id))ADM_SEL.delete(id);});
+  const cnt=u=>S.market.filter(i=>i.members.some(m=>m.uid===u.id)).length+S.dining.filter(i=>i.members.some(m=>m.uid===u.id)).length;
+  return `<p class="muted" style="margin:4px 0 10px">이 기기에 저장된 가입 계정입니다. 테스트로 만든 계정을 골라 지우면 그 계정의 참여·채팅·결제·후기 기록도 함께 지워집니다. 지운 번호로는 바로 다시 가입할 수 있습니다.</p>
+    ${list.length?`<div class="mg">${list.map(u=>`<label class="mi"><input type="checkbox" data-a="adm-pick" data-id="${u.id}" ${ADM_SEL.has(u.id)?'checked':''} style="width:20px;height:20px;accent-color:var(--orange)">${avatar(u)}<span class="mi-t"><b>${esc(u.nickname)}</b><small>${maskPhone(u.phone)} · ${esc(u.region)} · 가입 ${fmtMD(u.createdAt)} · 참여 ${cnt(u)}건${S.session===u.id?' · 지금 로그인 중':''}</small></span></label>`).join('')}</div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn ghost" style="flex:1" data-a="adm-pick-all">${ADM_SEL.size===list.length?'선택 해제':'전체 선택'}</button><button class="btn danger" style="flex:1" data-a="adm-del" ${ADM_SEL.size?'':'disabled'}>선택한 ${ADM_SEL.size}개 삭제</button></div>`
+    :'<div class="empty"><b>🙂</b>이 기기에 저장된 가입 계정이 없습니다.</div>'}
+    <div class="muted" style="margin-top:10px;font-size:12px">관리자 계정과 예시 이웃은 목록에 나오지 않습니다. 계정은 기기마다 따로 저장되므로, 다른 휴대폰의 테스트 계정은 그 휴대폰에서 지워야 합니다.</div>`;}
+A['adm-pick']=el=>{const id=el.dataset.id;if(el.checked)ADM_SEL.add(id);else ADM_SEL.delete(id);paint(true);};
+A['adm-pick-all']=()=>{const ids=S.users.filter(u=>!u.seed&&u.role!=='admin'&&u.id!=='u_demo'&&!u.deleted).map(u=>u.id);if(ADM_SEL.size===ids.length)ADM_SEL.clear();else ids.forEach(i=>ADM_SEL.add(i));paint(true);};
+A['adm-del']=guard(()=>{const ids=[...ADM_SEL],names=ids.map(id=>dispName(userById(id)));if(!ids.length)return;
+  ask({title:`계정 ${ids.length}개를 삭제할까요?`,body:`${names.join(', ')}\n\n이 계정들의 참여·채팅·결제·후기 기록과, 이 계정이 연 공구·식탁도 함께 지워집니다. 되돌릴 수 없습니다.`,ok:'삭제',danger:true,cancel:'취소',
+    fn:()=>{const r=Srv.adminDeleteUsers(ids);ADM_SEL.clear();toast(`계정 ${r.n}개를 삭제했습니다.`);paint(true);}});});
 
 /* ===== 확장: 출석체크 · 혼디 친구 · 캘린더 · 함께 이동(걸음) ===== */
 const streakOf=u=>{if(!u)return 0;ext(u);const set=new Set(u.attend);let d=todayStr();if(!set.has(d))d=addDays(d,-1);let n=0;while(set.has(d)){n++;d=addDays(d,-1);}return n;};
