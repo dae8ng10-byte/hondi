@@ -131,7 +131,8 @@ h3{font-size:16px;font-weight:700}
 .backdrop{position:absolute;inset:0;background:rgba(20,12,4,.55);display:flex;align-items:flex-end;z-index:50;animation:fade .2s}
 .sheet{width:100%;max-height:93%;overflow-y:auto;background:var(--bg);border-radius:28px 28px 0 0;padding:10px max(20px,env(safe-area-inset-left,0px)) 28px;animation:up .28s cubic-bezier(.2,.9,.3,1)}
 .sheet-grip{width:42px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 14px}
-.sheet-x{position:sticky;top:0;float:right;font-size:22px;color:var(--ink2);padding:2px 6px;z-index:2}
+.sheet-xw{position:sticky;top:0;height:0;z-index:3}.sheet-x{position:absolute;right:-4px;top:0;font-size:22px;color:var(--ink2);padding:2px 6px;background:none;border:0;line-height:1.4}
+#sheet-body>:first-child{padding-right:40px}#sheet-body>.c-head:first-child{padding-right:0}
 .sheet h2.title{margin:2px 0 4px;clear:none}
 @keyframes up{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
@@ -1084,7 +1085,7 @@ function nbFix(root){try{const w=document.createTreeWalker(root,NodeFilter.SHOW_
 try{new MutationObserver(ms=>{ms.forEach(m=>m.addedNodes.forEach(x=>{if(x.nodeType===1)nbFix(x);else if(x.nodeType===3&&x.parentNode)nbFix(x.parentNode);}));}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
 function openSheet(render,kind){
   SH.render=render;SH.kind=kind||null;
-  $('#modal-root').innerHTML=`<div class="backdrop" data-a="bd"><div class="sheet" role="dialog" aria-modal="true"><div class="sheet-grip"></div><button class="sheet-x" data-a="sheet-close" aria-label="닫기">✕</button><div id="sheet-body">${render()}</div></div></div>`;
+  $('#modal-root').innerHTML=`<div class="backdrop" data-a="bd"><div class="sheet" role="dialog" aria-modal="true"><div class="sheet-grip"></div><div class="sheet-xw"><button class="sheet-x" data-a="sheet-close" aria-label="닫기">✕</button></div><div id="sheet-body">${render()}</div></div></div>`;
 }
 function refreshSheet(){
   if(!SH.render)return;const sh=$('.sheet');if(!sh)return;
@@ -1498,7 +1499,7 @@ const PREV={render:null,kind:null};
 function profileHtml(){
   const x=userById(UI.pid),u=me();if(!x)return '<div class="empty">찾을 수 없습니다.</div>';
   const self=u&&u.id===x.id;
-  return `<div style="text-align:center;margin-top:8px">${avatar(x,'lg')}<h2 style="margin-top:8px">${esc(dispName(x))}</h2>
+  return `<div class="c-head" style="text-align:center;margin-top:8px">${avatar(x,'lg')}<h2 style="margin-top:8px">${esc(dispName(x))}</h2>
     <div style="margin:6px 0">${x.type?typePill(x.type):'<span class="tag gray">성향 미진단</span>'} ${isRestricted(x)?'<span class="tag red">이용 제한 중</span>':''}</div>
     <div>${tempTag(x)} · <span class="muted">${esc(x.region||'')}</span></div>
     <div class="snl-box"><b>🤝 수눌음 지수란?</b>약속을 잘 지킬수록 오르는 이웃 신뢰 점수입니다.<small>수눌음: 이웃끼리 일손을 주고받던 제주식 품앗이</small></div>
