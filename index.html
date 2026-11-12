@@ -720,7 +720,7 @@ function seedWorld(){
 }
 
 /* ===== 규칙 엔진 (서버 역할을 브라우저 안에서 수행하는 체험용 백엔드) ===== */
-const LS_KEY=DEMO_MODE?'hondi.presenter.v4':'hondi.demo.v3';   // 일반용은 기존 저장 위치를 그대로 써서 가입 계정·기록을 유지해요
+const LS_KEY='hondi.demo.v3';   // 일반용은 기존 저장 위치를 그대로 써서 가입 계정·기록을 유지해요
 let S=null, OTP=null, SIGNUP=null; const LASTMSG={};
 /* 저장된 데이터를 불러옵니다. 예시 데이터가 바뀐 경우엔 새 예시로 바꾸되, 체험·운영자 로그인은 유지합니다 */
 function loadWorld(){try{const raw=localStorage.getItem(LS_KEY);if(raw){const w=JSON.parse(raw);
@@ -766,7 +766,7 @@ function ext(u){if(!u)return u;
 const OLD_PLACE=Object.fromEntries(['애월 바당슈퍼','원도심 이웃슈퍼','서귀포 새별슈퍼','한림 오일장 옆 정다운마트','세화 하나둘마트','성산 일출슈퍼','모슬포 로컬마트','표선 해안슈퍼',
   '애월읍 동네마트','제주시 원도심 동네마트','이도동 동네마트','서귀포시 동네마트','한림읍 동네마트','구좌읍 동네마트','성산읍 동네마트','대정읍 동네마트','표선면 동네마트'].map(k=>[k,'동네마트']));
 const OLD_SPACE_TEXT=['제주시 주민센터 공유주방','서귀포시 청년공간 주방','서귀포 쿠킹룸'];
-const RECENT_KEY=DEMO_MODE?'hondi.presenter.recent.v4':'hondi.recent';
+const RECENT_KEY='hondi.recent';
 try{if(!DEMO_MODE){const v4=localStorage.getItem('hondi.v4');if(v4&&!localStorage.getItem('hondi.demo.v3'))localStorage.setItem('hondi.demo.v3',v4);localStorage.removeItem('hondi.v4');}}catch(e){}
 function recentLogins(){try{return JSON.parse(localStorage.getItem(RECENT_KEY)||'[]').filter(x=>/^01\d{8,9}$/.test(x)).slice(0,3);}catch(e){return [];}}
 function rememberLogin(phone){try{const l=[phone,...recentLogins().filter(x=>x!==phone)].slice(0,3);localStorage.setItem(RECENT_KEY,JSON.stringify(l));}catch(e){}}
@@ -946,16 +946,16 @@ const Srv={
     payEnd(u.id,'market',i.id,'refunded');i.members=i.members.filter(m=>m.uid!==u.id);if(i.stage===2&&i.members.length<i.goal)i.stage=1;
     chatPush(i.id,null,`${u.nickname}님이 참여를 취소했습니다 (${i.members.length}/${i.goal})`,true);save();return i;},
   mkAdvance(id){const u=needUser();const i=findM(id);if(!i)bad('공구를 찾을 수 없습니다.');
-    const host=i.hostId===u.id||u.role==='admin',demo=S.settings.demoTools&&i.members.some(m=>m.uid===u.id);
+    const host=i.hostId===u.id||u.role==='admin',demo=demoOn()&&i.members.some(m=>m.uid===u.id);
     if(!host&&!demo)bad('팟장만 진행할 수 있습니다.');if(i.stage<2||i.stage>3)bad('다음 단계로 진행할 수 없는 상태입니다.');
     i.stage++;chatPush(i.id,null,i.stage===3?'🧾 발주가 완료되었습니다. 물건이 도착하면 알려드리겠습니다.':`📦 물건이 도착했습니다! ${i.pickupName}에서 ${i.pickupTime} 소분 픽업합니다. QR/코드를 준비해 주세요.`,true);save();return i;},
-  mkFill(id){const u=needUser();const i=findM(id);if(!i)bad('공구를 찾을 수 없습니다.');if(!S.settings.demoTools)bad('시연 도구가 꺼져 있습니다.');
+  mkFill(id){const u=needUser();const i=findM(id);if(!i)bad('공구를 찾을 수 없습니다.');if(!demoOn())bad('시연 도구가 꺼져 있습니다.');
     if(i.stage!==1)bad('이미 모집이 끝난 공구입니다.');
     const pool=S.users.filter(x=>x.seed&&!i.members.some(m=>m.uid===x.id)&&!isBlocked(u,x.id));
     while(i.members.length<i.goal&&pool.length){const n=pool.shift();i.members.push({uid:n.id,code:newCode(),picked:false,joinedAt:Date.now()});payNew(n.id,'market',i.id,mAmount(i),'토스페이');}
     if(i.members.length>=i.goal){i.stage=2;chatPush(i.id,null,'🎉 목표 인원 달성! 팟장이 곧 발주합니다.',true);}save();return i;},
   mkPickup(id,code,byDemo){const u=needUser();const i=findM(id);if(!i)bad('공구를 찾을 수 없습니다.');
-    const host=i.hostId===u.id||u.role==='admin';if(!host&&!byDemo)bad('팟장만 픽업을 확인할 수 있습니다.');if(byDemo&&!S.settings.demoTools)bad('시연 도구가 꺼져 있습니다.');
+    const host=i.hostId===u.id||u.role==='admin';if(!host&&!byDemo)bad('팟장만 픽업을 확인할 수 있습니다.');if(byDemo&&!demoOn())bad('시연 도구가 꺼져 있습니다.');
     if(i.stage!==4)bad('아직 픽업 단계가 아닙니다.');code=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
     const m=i.members.find(x=>x.code===code);if(!m)bad('픽업 코드가 맞지 않습니다.');if(m.picked)bad(`${dispName(userById(m.uid))}님은 이미 픽업했습니다.`);
     m.picked=true;payEnd(m.uid,'market',i.id,'settled');adjTemp(m.uid,0.3);petExp(m.uid,30);chatPush(i.id,null,`✅ ${dispName(userById(m.uid))}님 픽업 완료`,true);save();return{item:i,who:dispName(userById(m.uid))};},
@@ -1070,6 +1070,8 @@ function avatar(u,cls){
 }
 function typePill(t){const T=TYPES[t];return T?`<span class="type-pill" style="--c:${T.color}">${T.emoji} ${T.short}</span>`:'';}
 /* 수눌음 지수: 약속을 지킬 때마다 오르는 신뢰 지표 (기본 10) */
+/* 시연 도구는 시연용 링크에서만 켜집니다 (사용자용 링크에서는 항상 꺼짐) */
+function demoOn(){return DEMO_MODE&&!!(S&&S.settings&&S.settings.demoTools);}
 function stoneOf(u){return u?Math.max(0,Math.round((u.temp-35.5)*10)):0;}
 function tempTag(u){const n=stoneOf(u);return `<span class="temp ${n<5?'low':''}" title="수눌음: 이웃끼리 일손을 주고받던 제주식 품앗이">🤝 수눌음 ${n}</span>`;}
 function avatarStack(ids,max){max=max||4;const list=ids.slice(0,max).map(id=>avatar(userById(id))).join('');
@@ -1297,7 +1299,7 @@ function mDetailHtml(){
   /* 참여자 */
   const roster=i.members.filter(m=>!(u&&isBlocked(u,m.uid))).map(m=>{const x=userById(m.uid);
     return `<div class="roster"><span class="person" data-a="profile" data-id="${m.uid}" style="cursor:pointer">${avatar(x)}<span class="info"><b>${esc(dispName(x))}${m.uid===i.hostId?' <span class="tag">팟장</span>':''}${u&&m.uid===u.id?' <span class="tag g">나</span>':''}</b><small>${x&&x.type?typePill(x.type):''} ${x&&!x.deleted?tempTag(x):''}</small></span></span>
-      <span>${i.stage===4?(m.picked?'<span class="tag g">픽업 완료</span>':'<span class="tag gray">대기</span>'):''}${isHost&&i.stage===4&&!m.picked&&S.settings.demoTools?`<button class="chip" style="margin-left:6px" data-a="m-demo-pick" data-code="${m.code}">시연: 픽업 확인</button>`:''}</span></div>`;}).join('');
+      <span>${i.stage===4?(m.picked?'<span class="tag g">픽업 완료</span>':'<span class="tag gray">대기</span>'):''}${isHost&&i.stage===4&&!m.picked&&demoOn()?`<button class="chip" style="margin-left:6px" data-a="m-demo-pick" data-code="${m.code}">시연: 픽업 확인</button>`:''}</span></div>`;}).join('');
   /* 액션 */
   let act='';
   if(!u)act=`<button class="btn primary block" data-a="m-join" data-id="${i.id}">로그인하고 참여하기</button>`;
@@ -1310,7 +1312,7 @@ function mDetailHtml(){
     if(isHost&&i.stage===4)act+=`<div class="field"><label>이웃 픽업 코드 확인</label><div class="chat-input" style="border:0;padding:0"><input data-in="pcode" value="${esc(DRAFT.pcode||'')}" maxlength="8" placeholder="6자리 코드" data-enter="m-pickup" style="text-transform:uppercase"><button class="btn green" data-a="m-pickup" data-id="${i.id}">확인</button></div></div>`;
     if((isHost||admin)&&i.stage<3)act+=`<button class="btn ghost block" style="margin-top:8px" data-a="m-cancel" data-id="${i.id}">공구 취소 (참여자 전액 환불)</button>`;
   }
-  const demo=(S.settings.demoTools&&u&&mine&&mActive(i)&&(i.stage===1||(i.stage>=2&&i.stage<=3&&!isHost)))?`<div class="info-box"><b>🛠 시연 도구</b>${i.stage===1?`<button class="demo-btn" data-a="m-fill" data-id="${i.id}">이웃들이 모여서 목표 달성시키기</button>`:''}${i.stage>=2&&i.stage<=3&&!isHost?`<button class="demo-btn" data-a="m-adv" data-id="${i.id}">팟장 대신 다음 단계로 진행</button>`:''}</div>`:'';
+  const demo=(demoOn()&&u&&mine&&mActive(i)&&(i.stage===1||(i.stage>=2&&i.stage<=3&&!isHost)))?`<div class="info-box"><b>🛠 시연 도구</b>${i.stage===1?`<button class="demo-btn" data-a="m-fill" data-id="${i.id}">이웃들이 모여서 목표 달성시키기</button>`:''}${i.stage>=2&&i.stage<=3&&!isHost?`<button class="demo-btn" data-a="m-adv" data-id="${i.id}">팟장 대신 다음 단계로 진행</button>`:''}</div>`:'';
   return `<div class="m-card"><div class="top"><div class="tile">${esc(i.emoji)}</div><div class="t"><h2 style="font-size:19px">${esc(i.title)}</h2><span class="muted">${esc(i.cat)} · ${esc(i.region)}</span></div></div></div>
     <div style="margin:8px 0">${mStatusTag(i)} ${mine?'<span class="tag g">참여중</span>':''}</div>
     <p style="margin:6px 0 10px">${esc(i.desc)}</p>
@@ -1533,7 +1535,7 @@ function reportHtml(){
     <div class="notice info">서로 다른 이웃 <b>${AUTO_RESTRICT_REPORTS}명 이상</b>이 신고하면 운영팀 확인 전에 임시 이용 제한이 걸립니다. 허위 신고는 제재될 수 있습니다.</div>
     ${chk('rp_block','신고와 함께 이 이웃 차단하기')}
     <button class="btn danger block" data-a="rp-submit">신고 접수</button>
-    ${S.settings.demoTools?`<button class="demo-btn" data-a="rp-demo">🛠 시연: 이웃 2명이 이미 신고한 상태로 접수 (자동 제한 체험)</button>`:''}`;
+    ${demoOn()?`<button class="demo-btn" data-a="rp-demo">🛠 시연: 이웃 2명이 이미 신고한 상태로 접수 (자동 제한 체험)</button>`:''}`;
 }
 A['report-open']=guard(el=>{
   if(!requireLogin())return;
@@ -1982,7 +1984,7 @@ Views.my=()=>{
     ${group('나의 활동',myItem('my-activity','🧾','참여 중인 공구 · 식탁',`${active}건`)+myItem('go-cal','📅','캘린더',`출석 ${streakOf(u)}일 연속 · 내 일정 ${u.events.length}개`)+myItem('pay-list','💳','결제 내역','보관 · 정산 · 환불 상태')+myItem('profile','💐','받은 칭찬',`${praiseN}개`,`data-id="${u.id}"`))}
     ${group('혜택',myItem('pts-open','🪙','포인트',`${u.points.toLocaleString()}P 보유`)+myItem('pet-open','🐾','혼디 친구',u.pet?`${esc(u.pet.name)} · Lv.${petLevel(u.pet.exp).lv}`:'아직 함께하는 친구가 없습니다.'))}
     ${group('설정',myItem('pe-open','✏️','프로필 수정','닉네임 · 이모지 · 활동 지역')+myItem('quiz-start','🧭','생활 성향 테스트',u.type?TYPES[u.type].name:'아직 진단 전')+myItem('blocked-open','🚫','차단 관리',`${u.blocked.length}명`)
-      +(DEMO_MODE?`<label class="mi"><span class="mi-e">🛠</span><span class="mi-t"><b>시연 도구 보이기</b><small>인원 채우기 · 단계 진행 버튼</small></span><input type="checkbox" data-in="demoTools" ${S.settings.demoTools?'checked':''} data-on="toggle-demo" style="width:22px;height:22px;accent-color:var(--orange)"></label>`:''))}
+      +(DEMO_MODE?`<label class="mi"><span class="mi-e">🛠</span><span class="mi-t"><b>시연 도구 보이기</b><small>인원 채우기 · 단계 진행 버튼</small></span><input type="checkbox" data-in="demoTools" ${demoOn()?'checked':''} data-on="toggle-demo" style="width:22px;height:22px;accent-color:var(--orange)"></label>`:''))}
     ${group('고객지원',myItem('help-open','💬','도우미 · 1:1 문의','평일 10:00~18:00 답변')+myItem('legal-terms','📄','이용약관')+myItem('legal-priv','🔒','개인정보 처리 안내'))}
     ${group('계정',myItem('logout','🚪','로그아웃')+myItem('reset-ask','🔄','체험 예시 처음으로','계정·포인트는 그대로 두고 예시만 되돌립니다')+myItem('withdraw-ask','⚠️','회원 탈퇴',`탈퇴 후 ${REJOIN_DAYS}일 동안 재가입할 수 없습니다.`))}`;
 };
@@ -2060,7 +2062,7 @@ Object.assign(Srv,{
     const st=streakOf(u);addPts(u.id,ATT_DAILY,'출석체크');let bonus=0;
     if(st%ATT_STREAK===0){bonus=ATT_BONUS;addPts(u.id,ATT_BONUS,`${ATT_STREAK}일 연속 출석 보너스`);}
     const lv=petExp(u.id,10);save();return{streak:st,bonus,lv};},
-  attDemo(){const u=needUser();if(!S.settings.demoTools)bad('시연 도구가 꺼져 있습니다.');const t=todayStr();
+  attDemo(){const u=needUser();if(!demoOn())bad('시연 도구가 꺼져 있습니다.');const t=todayStr();
     const set=new Set(u.attend);for(let k=1;k<ATT_STREAK;k++)set.add(addDays(t,-k));u.attend=[...set];save();},
   petAdopt(kind,name){const u=needUser();ext(u);if(u.pet)bad('이미 함께하는 친구가 있습니다.');if(!PET_KINDS[kind])bad('친구를 골라 주세요.');
     name=String(name||'').trim()||PET_KINDS[kind].name;
@@ -2170,7 +2172,7 @@ function attCardHtml(u){const st=streakOf(u),done=checkedToday(u);
     <div class="muted" style="margin-bottom:10px">${done?(pos===ATT_STREAK?`🎁 ${ATT_STREAK}일 연속 달성! 보너스 +${ATT_BONUS}P를 받았습니다.`:`오늘 출석 완료! ${left}일 더 이어 가면 보너스 +${ATT_BONUS}P`):`오늘 출석하면 +${ATT_DAILY}P${left===1?` · <b style="color:var(--orange-d)">오늘이 7일째! 보너스 +${ATT_BONUS}P</b>`:` · ${left}일 연속이면 보너스 +${ATT_BONUS}P`}`}</div>
     <button class="btn ${done?'ghost':'primary'} block" data-a="att-check" ${done?'disabled':''}>${done?'✓ 오늘 출석 완료':'🐾 출석 도장 찍기'}</button>
     <div class="rule-chips"><span>🐾 매일 +${ATT_DAILY}P</span><span>🎁 ${ATT_STREAK}일 연속 +${ATT_BONUS}P</span><span>↺ 빠지면 1일부터</span></div>
-    ${S.settings.demoTools&&!done&&pos<ATT_STREAK-1?`<button class="demo-btn" data-a="att-demo">🛠 시연: 어제까지 ${ATT_STREAK-1}일 연속 출석한 상태로 만들기</button>`:''}</div>`;
+    ${demoOn()&&!done&&pos<ATT_STREAK-1?`<button class="demo-btn" data-a="att-demo">🛠 시연: 어제까지 ${ATT_STREAK-1}일 연속 출석한 상태로 만들기</button>`:''}</div>`;
 }
 
 /* 홈: 혼디 친구 + 출석체크를 한 카드로 (친구가 출석 도장을 함께 찍어 줍니다) */
@@ -2190,7 +2192,7 @@ function buddyCardHtml(u){ext(u);const p=u.pet,L=p?petLevel(p.exp):null;
     <div class="att-days sm">${slots}</div>
     <div class="row-between" style="align-items:center"><span class="muted" style="min-width:0">${msg}</span>
     <button class="btn ${done?'ghost':'primary'}" style="padding:9px 14px;font-size:14px;flex-shrink:0" data-a="att-check" ${done?'disabled':''}>${done?'✓ 완료':'🐾 도장 찍기'}</button></div>
-    ${S.settings.demoTools&&!done&&pos<ATT_STREAK-1?`<button class="demo-btn" data-a="att-demo">🛠 시연: 어제까지 ${ATT_STREAK-1}일 연속 출석한 상태로</button>`:''}</div></div>`;
+    ${demoOn()&&!done&&pos<ATT_STREAK-1?`<button class="demo-btn" data-a="att-demo">🛠 시연: 어제까지 ${ATT_STREAK-1}일 연속 출석한 상태로</button>`:''}</div></div>`;
 }
 /* ----- 시트: 친구 · 포인트 · 일정 추가 ----- */
 /* 규칙·보상 안내를 한 줄 문장 대신 타일로 보여 줍니다: [이모지, 이름, 값, 보조] */
@@ -2266,7 +2268,7 @@ function tripHtml(){const u=me(),info=tripInfo(TRIP.key);if(!u||!info||!u.pet)re
   const btns=arrived?`<button class="btn primary block" data-a="sheet-close">완료</button><button class="btn ghost block" style="margin-top:8px" data-a="trip-cal">📅 캘린더 보기</button>`
     :`<div style="display:flex;gap:8px">${TRIP.walking?`<button class="btn ghost" style="flex:1" data-a="trip-pause">⏸ 잠깐 쉬기</button>`:`<button class="btn green" style="flex:1" data-a="trip-go">▶ ${TRIP.steps?'이어 걷기':'출발하기'}</button>`}</div>
       <button class="btn ghost block" style="margin-top:8px" data-a="trip-other">🚌 버스·차량 등 다른 방법으로 도착했습니다 · +${ARRIVE_PT}P</button>
-      ${S.settings.demoTools?`<button class="demo-btn" data-a="trip-fast">${TRIP.speed>1?'🐢 시연: 보통 속도로':'⏩ 시연: 빨리 걷기 (×10)'}</button>`:''}`;
+      ${demoOn()?`<button class="demo-btn" data-a="trip-fast">${TRIP.speed>1?'🐢 시연: 보통 속도로':'⏩ 시연: 빨리 걷기 (×10)'}</button>`:''}`;
   return `<h2 class="title">🚶 ${esc(u.pet.name)}랑 같이 이동 중</h2><p class="muted">${esc(info.emoji)} ${esc(info.title)} · 📍 ${esc(info.place)} <span class="muted">(${esc(info.region)})</span></p>
     <div class="trip-scene ${TRIP.walking?'walking':''}" id="trip-scene"><div class="trip-hills"></div><div class="trip-road"></div>
       <span class="trip-home" aria-hidden="true">🏠</span><span class="trip-goal">${arrived?'🎉':'📍'}<small>${esc(info.place)}</small></span>
@@ -2406,7 +2408,7 @@ const upcomingDAll=()=>S.dining.filter(i=>!i.cancelled&&i.date>=todayStr());
 
 /* ----- 부팅 ----- */
 function boot(){
-  S=migrate(loadWorld());BASE_REV=storedRev();if(!DEMO_MODE)S.settings.demoTools=false;Srv.sweep();
+  S=migrate(loadWorld());BASE_REV=storedRev();Srv.sweep();
   const rs=$('#regionSelect');rs.innerHTML='<option value="전체">전체 지역</option><optgroup label="시 전체"><option value="제주시">제주시 전체</option><option value="서귀포시">서귀포시 전체</option></optgroup>'+regionOptions('',true);
   rs.addEventListener('change',()=>{UI.region=rs.value;UI.dspace=null;paint(true);});
   UI.view=(me()||S.guestType||UI.introSkipped)?'home':'intro';
