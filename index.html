@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>혼디</title>
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="혼디">
-<meta name="theme-color" content="#FFF8EE"><meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#FFF8EE"><meta name="format-detection" content="telephone=no"><meta name="robots" content="index">
 <link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-512.png"><link rel="manifest" href="manifest.webmanifest">
 </head><body>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -405,6 +405,8 @@ table.pol{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}table.
 </div>
 <script>
 'use strict';
+/* 실행 모드: 일반 사용자용(기본) / 발표용(demo/index.html에서 HONDI_DEMO=true). 두 모드는 데이터도 따로 저장해요 */
+const DEMO_MODE=window.HONDI_DEMO===true;
 /* ===== 유틸 ===== */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -653,15 +655,15 @@ FAQ.push(
 /* ===== 월드 시드 (체험용 이웃·공구·식탁·채팅) ===== */
 function seedWorld(){
   const t0=todayStr(), now=Date.now(); let seq=100;
-  const W={v:3,seq:0,session:null,users:[],market:[],dining:[],chats:{},payments:[],reports:[],inquiries:[],withdrawn:[],guestType:null,settings:{demoTools:false},seedVer:2};
-  const U=(id,phone,nickname,emoji,type,region,temp,extra)=>W.users.push(Object.assign({id,phone,nickname,emoji,type,region,temp,role:'user',verified:true,di:hash('seed'+id),birthYear:1995,nameMasked:'김*수',blocked:[],restrictedUntil:0,createdAt:now-30*DAY,seed:true},extra||{}));
+  const W={v:3,seq:0,session:null,users:[],market:[],dining:[],chats:{},payments:[],reports:[],inquiries:[],withdrawn:[],guestType:null,settings:{demoTools:DEMO_MODE},seedVer:2};
+  const U=(id,phone,nickname,emoji,type,region,temp,extra)=>W.users.push(Object.assign({id,phone:(extra&&extra.seed===false)?phone:'seed:'+id,nickname,emoji,type,region,temp,role:'user',verified:true,di:hash('seed'+id),birthYear:1995,nameMasked:'김*수',blocked:[],restrictedUntil:0,createdAt:now-30*DAY,seed:true},extra||{}));
   U('n1','01011110001','감귤러버','🧑‍🍳','cook','애월읍',36.9); U('n2','01011110002','오름바람','🧗','walker','구좌읍',36.6);
   U('n3','01011110003','알뜰이','🧮','saver','연동·노형',37.2); U('n4','01011110004','바당길','🏄','explorer','성산읍',36.5);
   U('n5','01011110005','고사리','👩‍🌾','cook','송산·정방·중앙·천지',37.0); U('n6','01011110006','동백','🌺','walker','대정읍',36.7);
   U('n7','01011110007','한라봉','🍊','saver','한림읍',36.8); U('n8','01011110008','돌하르방','🗿','explorer','표선면',36.5);
   U('n9','01011110009','이불속곰','🐻','rester','아라·오라',36.4); U('n10','01011110010','뒹굴이','🦥','rester','중문·예래',36.5);
   U('u_admin','01099999999','혼디운영팀','🛡️','explorer','일도·이도',40,{role:'admin',seed:false});
-  U('u_demo','01000000000','귤빛산책','🐬','walker','일도·이도',36.5,{seed:false,di:hash('홍길동19980315'),nameMasked:'홍*동',birthYear:1998});
+  U('u_demo',DEMO_MODE?'01000000000':'seed:u_demo','귤빛산책','🐬','walker','일도·이도',36.5,{seed:!DEMO_MODE,di:DEMO_MODE?hash('홍길동19980315'):hash('seed u_demo'),nameMasked:'홍*동',birthYear:1998});
   const mk=(hostId,emoji,title,cat,region,price,ship,goal,dl,fit,pn,pd,desc,members)=>{const id='m'+(++seq);
     const it={id,hostId,emoji,title,cat,region,price,ship,goal,stage:1,deadline:addDays(t0,dl),fit,pickupName:pn,pickupDate:addDays(t0,pd),pickupTime:`${fmtDate(addDays(t0,pd))} 18:00~20:00`,desc,cancelled:false,failed:false,members:[]};
     members.forEach(uid=>{it.members.push({uid,code:newCode(),picked:false,joinedAt:uid==='u_demo'?now-3*3600000:now-rand(5)*3600000});
@@ -701,7 +703,7 @@ function seedWorld(){
 }
 
 /* ===== 규칙 엔진 (서버 역할을 브라우저 안에서 수행하는 체험용 백엔드) ===== */
-const LS_KEY='hondi.demo.v3';
+const LS_KEY=DEMO_MODE?'hondi.presenter.v4':'hondi.v4';   // v4: 2026-11-12 계정 전체 초기화 (관리자만 남김)
 let S=null, OTP=null, SIGNUP=null; const LASTMSG={};
 /* 저장된 데이터를 불러옵니다. 예시 데이터가 바뀐 경우엔 새 예시로 바꾸되, 체험·운영자 로그인은 유지합니다 */
 function loadWorld(){try{const raw=localStorage.getItem(LS_KEY);if(raw){const w=JSON.parse(raw);
@@ -738,7 +740,8 @@ function ext(u){if(!u)return u;
 const OLD_PLACE=Object.fromEntries(['애월 바당슈퍼','원도심 이웃슈퍼','서귀포 새별슈퍼','한림 오일장 옆 정다운마트','세화 하나둘마트','성산 일출슈퍼','모슬포 로컬마트','표선 해안슈퍼',
   '애월읍 동네마트','제주시 원도심 동네마트','이도동 동네마트','서귀포시 동네마트','한림읍 동네마트','구좌읍 동네마트','성산읍 동네마트','대정읍 동네마트','표선면 동네마트'].map(k=>[k,'동네마트']));
 const OLD_SPACE_TEXT=['제주시 주민센터 공유주방','서귀포시 청년공간 주방','서귀포 쿠킹룸'];
-const RECENT_KEY='hondi.recent';
+const RECENT_KEY=DEMO_MODE?'hondi.presenter.recent.v4':'hondi.recent.v4';
+try{['hondi.demo.v3','hondi.recent'].forEach(k=>localStorage.removeItem(k));}catch(e){}  // 예전 기록 정리
 function recentLogins(){try{return JSON.parse(localStorage.getItem(RECENT_KEY)||'[]').filter(x=>/^01\d{8,9}$/.test(x)).slice(0,3);}catch(e){return [];}}
 function rememberLogin(phone){try{const l=[phone,...recentLogins().filter(x=>x!==phone)].slice(0,3);localStorage.setItem(RECENT_KEY,JSON.stringify(l));}catch(e){}}
 /* 새로 가입한 사람도 바로 둘러볼 수 있게: 오늘(없으면 가까운) 식탁 하나와 모집 중인 공구 하나에 참여한 상태로 시작해요 */
@@ -837,7 +840,7 @@ const Srv={
   /* ===== 가입 · 로그인 ===== */
   requestOtp(phone){phone=digits(phone);if(!/^01[016789]\d{7,8}$/.test(phone))bad('올바른 휴대폰 번호를 입력해 주세요.');
     OTP={phone,code:String(100000+rand(900000)),exp:Date.now()+300000,tries:0};return OTP.code;},
-  quickLogin(phone){const map={'01000000000':'u_demo','01099999999':'u_admin'};const id=map[digits(phone)];if(!id)return null;S.session=id;save();rememberLogin(digits(phone));return me();},
+  quickLogin(phone){const map=DEMO_MODE?{'01000000000':'u_demo','01099999999':'u_admin'}:{'01099999999':'u_admin'};const id=map[digits(phone)];if(!id)return null;S.session=id;save();rememberLogin(digits(phone));return me();},
   verifyOtp(phone,code){phone=digits(phone);const o=OTP;
     if(!o||o.phone!==phone||o.exp<Date.now())bad('인증번호가 만료되었습니다. 다시 받아 주세요.');
     if(++o.tries>5){OTP=null;bad('인증 시도가 너무 많습니다. 인증번호를 다시 받아 주세요.');}
@@ -1123,7 +1126,7 @@ function authHtml(){
   if(AUTH.step==='id')return `${head('본인확인','안전한 이웃 거래를 위해 1인 1계정 확인을 합니다.')}
     ${fld('이름',inp('name',{ph:'실명 (외국인은 외국인등록증 이름)',max:40,ac:'name',enter:'auth-id'}))}
     <div class="field"><label>생년월일 6자리</label>${inp('birth',{mode:'numeric',fmt:'digits',max:8,ph:'예) 980315',enter:'auth-id',ac:'bday'})}${(()=>{const r=birthHint(DRAFT.birth);return `<div class="birth-hint ${r.c}" id="birth-hint" aria-live="polite">${esc(r.t)}</div>`;})()}</div>
-    <div class="notice info">🔒 체험 모드는 실제 인증기관 없이 입력값으로 진행합니다. 실서비스에서는 통신사 본인확인(PASS 등)을 연동합니다.<br>저장하는 것은 <b>마스킹 이름·출생연도·중복가입 확인값</b>뿐이고 원문은 보관하지 않습니다.<br>같은 이름·생년월일로 두 번째 계정은 만들 수 없습니다. <small class="muted">(체험: 홍길동 / 980315 는 이미 가입됨)</small></div>${err}
+    <div class="notice info">🔒 체험 모드는 실제 인증기관 없이 입력값으로 진행합니다. 실서비스에서는 통신사 본인확인(PASS 등)을 연동합니다.<br>저장하는 것은 <b>마스킹 이름·출생연도·중복가입 확인값</b>뿐이고 원문은 보관하지 않습니다.<br>같은 이름·생년월일로 두 번째 계정은 만들 수 없습니다. ${DEMO_MODE?'<small class="muted">(체험: 홍길동 / 980315 는 이미 가입됨)</small>':''}</div>${err}
     <button class="btn primary block" data-a="auth-id">본인확인 하기</button>`;
   return `${head('프로필 만들기','이웃에게는 닉네임과 이모지만 보입니다.')}
     ${fld('닉네임',inp('nick',{ph:'2~10자 (글자·숫자)',max:10,enter:'auth-signup'}))}
@@ -1918,7 +1921,7 @@ Views.my=()=>{
     ${group('나의 활동',myItem('my-activity','🧾','참여 중인 공구 · 식탁',`${active}건`)+myItem('go-cal','📅','캘린더',`출석 ${streakOf(u)}일 연속 · 내 일정 ${u.events.length}개`)+myItem('pay-list','💳','결제 내역','보관 · 정산 · 환불 상태')+myItem('profile','💐','받은 칭찬',`${praiseN}개`,`data-id="${u.id}"`))}
     ${group('혜택',myItem('pts-open','🪙','포인트',`${u.points.toLocaleString()}P 보유`)+myItem('pet-open','🐾','혼디 친구',u.pet?`${esc(u.pet.name)} · Lv.${petLevel(u.pet.exp).lv}`:'아직 함께하는 친구가 없습니다.'))}
     ${group('설정',myItem('quiz-start','🧭','생활 성향 테스트',u.type?TYPES[u.type].name:'아직 진단 전')+myItem('blocked-open','🚫','차단 관리',`${u.blocked.length}명`)
-      +`<label class="mi"><span class="mi-e">🛠</span><span class="mi-t"><b>시연 도구 보이기</b><small>인원 채우기 · 단계 진행 버튼 (발표용)</small></span><input type="checkbox" data-in="demoTools" ${S.settings.demoTools?'checked':''} data-on="toggle-demo" style="width:22px;height:22px;accent-color:var(--orange)"></label>`)}
+      +(DEMO_MODE?`<label class="mi"><span class="mi-e">🛠</span><span class="mi-t"><b>시연 도구 보이기</b><small>인원 채우기 · 단계 진행 버튼 (발표용)</small></span><input type="checkbox" data-in="demoTools" ${S.settings.demoTools?'checked':''} data-on="toggle-demo" style="width:22px;height:22px;accent-color:var(--orange)"></label>`:''))}
     ${group('고객지원',myItem('help-open','💬','도우미 · 1:1 문의','평일 10:00~18:00 답변')+myItem('legal-terms','📄','이용약관')+myItem('legal-priv','🔒','개인정보 처리 안내'))}
     ${group('계정',myItem('logout','🚪','로그아웃')+myItem('reset-ask','🔄','체험 예시 처음으로','계정·포인트는 그대로 두고 예시만 되돌립니다')+myItem('withdraw-ask','⚠️','회원 탈퇴',`탈퇴 후 ${REJOIN_DAYS}일 동안 재가입할 수 없습니다.`))}`;
 };
@@ -1927,7 +1930,7 @@ A['my-activity']=()=>{if(!requireLogin())return;openSheet(()=>`<h2 class="title"
 A['go-admin']=()=>go('admin');
 A['legal-terms']=(el,e)=>{el.dataset.k='terms';A.legal(el,e);};
 A['legal-priv']=(el,e)=>{el.dataset.k='privacy';A.legal(el,e);};
-A['toggle-demo']=el=>{S.settings.demoTools=el.checked;save();rerender();};
+A['toggle-demo']=el=>{if(!DEMO_MODE)return;S.settings.demoTools=el.checked;save();rerender();};
 A['logout']=()=>{Srv.logout();toast('로그아웃했습니다.');go('home');};
 A['withdraw-ask']=guard(()=>{ask({title:'정말 탈퇴할까요?',body:`개인정보는 즉시 파기됩니다. 같은 본인정보로는 ${REJOIN_DAYS}일 뒤(제재 이력이 있으면 ${REJOIN_DAYS_SANCTION}일 뒤)에 다시 가입할 수 있습니다. 진행 중인 공구·식탁이 있으면 탈퇴할 수 없습니다.`,ok:'탈퇴하기',danger:true,cancel:'취소',fn:()=>{try{Srv.withdraw();}catch(e){handleErr(e);return;}toast('탈퇴가 완료되었습니다.');go('home');}});});
 A['reset-ask']=()=>ask({title:'체험 예시를 처음으로 돌릴까요?',body:'예시 공구·식탁·채팅이 처음 상태로 돌아갑니다.\n가입한 계정, 포인트, 혼디 친구, 내 일정은 그대로 남습니다.',ok:'처음으로',danger:true,cancel:'취소',fn:()=>{resetWorld();toast('체험 예시를 처음 상태로 돌렸습니다.');go(me()?'home':'intro');}});
@@ -2317,7 +2320,8 @@ const upcomingDAll=()=>S.dining.filter(i=>!i.cancelled&&i.date>=todayStr());
 
 /* ----- 부팅 ----- */
 function boot(){
-  S=migrate(loadWorld());Srv.sweep();
+  S=migrate(loadWorld());if(!DEMO_MODE)S.settings.demoTools=false;Srv.sweep();
+  if(DEMO_MODE){const lg=$('.logo');if(lg)lg.insertAdjacentHTML('afterend','<span class="tag" style="margin-left:6px">발표용</span>');}
   const rs=$('#regionSelect');rs.innerHTML='<option value="전체">전체 지역</option><optgroup label="시 전체"><option value="제주시">제주시 전체</option><option value="서귀포시">서귀포시 전체</option></optgroup>'+regionOptions('',true);
   rs.addEventListener('change',()=>{UI.region=rs.value;UI.dspace=null;paint(true);});
   UI.view=(me()||S.guestType||UI.introSkipped)?'home':'intro';
