@@ -844,6 +844,8 @@ const Srv={
   requestOtp(phone){phone=digits(phone);if(!/^01[016789]\d{7,8}$/.test(phone))bad('올바른 휴대폰 번호를 입력해 주세요.');
     OTP={phone,code:String(100000+rand(900000)),exp:Date.now()+300000,tries:0};return OTP.code;},
   quickLogin(phone){const map=DEMO_MODE?{'01000000000':'u_demo','01099999999':'u_admin'}:{'01099999999':'u_admin'};const id=map[digits(phone)];if(!id)return null;S.session=id;save();rememberLogin(digits(phone));return me();},
+  /* 이 기기에 이미 가입된 번호면 인증 없이 바로 로그인합니다 */
+  knownLogin(phone){phone=digits(phone);const u=S.users.find(x=>x.phone===phone&&!x.deleted&&!x.seed);if(!u)return null;S.session=u.id;save();rememberLogin(phone);return u;},
   verifyOtp(phone,code){phone=digits(phone);const o=OTP;
     if(!o||o.phone!==phone||o.exp<Date.now())bad('인증번호가 만료되었습니다. 다시 받아 주세요.');
     if(++o.tries>5){OTP=null;bad('인증 시도가 너무 많습니다. 인증번호를 다시 받아 주세요.');}
@@ -1134,11 +1136,11 @@ function authHtml(){
   const err=AUTH.err?`<div class="notice red" role="alert">${esc(AUTH.err)}</div>`:'';
   const steps={phone:1,otp:2,id:3,profile:4};
   const head=(t,sub)=>`<div class="muted">${steps[AUTH.step]}/4 단계</div><h2 class="title">${t}</h2><p class="muted" style="margin-bottom:6px">${sub}</p>`;
-  if(AUTH.step==='phone')return `${head('휴대폰 번호로 시작하기','번호 하나로 가입합니다. 상세 주소·주민번호는 받지 않습니다.')}
+  if(AUTH.step==='phone')return `${head('휴대폰 번호로 시작하기','이미 가입한 번호면 바로 로그인됩니다.')}
     ${(()=>{const rl=recentLogins();return rl.length?`<div class="field"><label>최근 로그인한 번호</label><div class="chip-row" style="flex-wrap:wrap">${rl.map(ph=>`<button type="button" class="chip" data-a="auth-recent" data-p="${ph}">📱 ${maskPhone(ph)}</button>`).join('')}</div></div>`:'';})()}
     ${fld('휴대폰 번호',inp('phone',{mode:'numeric',ph:'010-1234-5678',fmt:'phone',max:13,ac:'tel',enter:'auth-phone'}))}
-    <div class="notice info">• 인증번호는 문자 대신 화면에 표시됩니다.<br>• 실제 문자·결제는 발생하지 않습니다.</div>${err}
-    <button class="btn primary block" data-a="auth-phone">인증번호 받기</button>`;
+    <div class="notice info">• 처음이면 인증 후 가입합니다.<br>• 인증번호는 화면에 표시되며, 실제 문자·결제는 없습니다.</div>${err}
+    <button class="btn primary block" data-a="auth-phone">시작하기</button>`;
   if(AUTH.step==='otp')return `${head('인증번호를 입력합니다.',`${esc(fmtPhone(DRAFT.phone))} 로 보낸 6자리 숫자입니다.`)}
     <div class="notice ok">체험용 인증번호: <b class="code">${AUTH.code}</b> <button class="link" data-a="auth-otp-fill" style="background:none;border:0">자동 입력</button></div>
     ${fld('인증번호 6자리',inp('otp',{mode:'numeric',fmt:'digits',max:6,ph:'••••••',ac:'one-time-code',enter:'auth-otp'}))}${err}
@@ -1171,6 +1173,8 @@ A['auth-phone']=()=>{
   try{
     const u=Srv.quickLogin(DRAFT.phone||'');
     if(u){closeSheet();toast(`${u.nickname}님, 환영합니다! (${u.role==='admin'?'운영자':'체험'} 계정)`);afterLogin();return;}
+    const k=Srv.knownLogin(DRAFT.phone||'');
+    if(k){closeSheet();toast(`${k.nickname}님, 다시 오신 것을 환영합니다!`);afterLogin();return;}
     AUTH.code=Srv.requestOtp(DRAFT.phone||'');AUTH.step='otp';AUTH.err='';DRAFT.otp='';
   }catch(e){AUTH.err=e.message;}
   refreshSheet();
