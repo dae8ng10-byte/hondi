@@ -854,7 +854,8 @@ const payOf=(uid,kind,itemId)=>S.payments.find(p=>p.uid===uid&&p.kind===kind&&p.
 function payEnd(uid,kind,itemId,status){const p=payOf(uid,kind,itemId);if(p){p.status=status;p.endedAt=Date.now();
   if(status==='refunded'&&p.pointsUsed)addPts(p.uid,p.pointsUsed,'환불 · 사용 포인트 반환');}return p;}
 const ptsUsable=(u,amt)=>u?Math.max(0,Math.min(ext(u).points,Math.floor(amt*PAY_PT_RATE))):0;
-function chatPush(key,uid,text,sys){(S.chats[key]=S.chats[key]||[]).push({id:'c'+nid(),uid:sys?null:uid,text,ts:Date.now(),rep:[]});}
+/* own: 이 메시지를 볼 수 있는 계정 (내가 쓴 말과 그에 대한 이웃 답장은 나에게만 보입니다) */
+function chatPush(key,uid,text,sys,own){const m={id:'c'+nid(),uid:sys?null:uid,text,ts:Date.now(),rep:[]};if(own)m.own=own;(S.chats[key]=S.chats[key]||[]).push(m);}
 
 /* ----- 취소 규칙 ----- */
 function mCancelRule(i,uid){if(i.hostId===uid)return'팟장은 공구 취소 기능을 이용해 주세요.';if(i.stage>=3)return'발주가 완료되어 취소할 수 없습니다.';
@@ -1000,7 +1001,7 @@ const Srv={
     if(!i.members.some(m=>m.uid===u.id))bad('참여자만 채팅할 수 있습니다.');
     text=String(text||'').trim();if(!text)bad('메시지를 입력해 주세요.');if(text.length>300)bad('300자 이내로 입력해 주세요.');
     if(Date.now()-(LASTMSG[u.id]||0)<1200)bad('너무 빠르게 보내고 있습니다. 잠시 후 다시 보내 주세요.');
-    const r=Mod.check(text);if(!r.ok)bad(r.reason,'mod');LASTMSG[u.id]=Date.now();chatPush(key,u.id,text);save();return true;},
+    const r=Mod.check(text);if(!r.ok)bad(r.reason,'mod');LASTMSG[u.id]=Date.now();chatPush(key,u.id,text,false,u.id);save();return true;},
 
   /* ===== 신고 · 차단 ===== */
   report(type,tid,reason,detail){const u=needUser();let target=null,ref=null;
@@ -1585,7 +1586,9 @@ const CHAT={key:null};
 const REPLIES=['좋아요! 😊','넵 확인했어요~','저도 그 시간 가능해요!','감사합니다 🙏','기대돼요!','앗 조금 늦을 수도 있어요, 먼저 시작하세요~','오늘 날씨 좋네요 ☀️'];
 function chatItemTitle(){const i=Srv.chatItem(CHAT.key);return i?`${i.emoji} ${i.title}`:'채팅';}
 /* 카톡처럼: 내가 참여한 시점 이후의 대화만 보입니다 (다른 계정·이전 참여 때 대화는 안 보임) */
-function visibleMsgs(key,uid){const i=Srv.chatItem(key),all=S.chats[key]||[];if(!i)return all;
+/* 다른 계정이 쓴 말과 그 계정이 받은 이웃 답장은 보이지 않게 합니다 (안내 메시지·예시 이웃 대화는 모두에게 보입니다) */
+function msgForMe(m,uid){if(m.own)return m.own===uid;if(m.uid&&m.uid!==uid){const w=userById(m.uid);if(!w||!w.seed)return false;}return true;}
+function visibleMsgs(key,uid){const i=Srv.chatItem(key),all=(S.chats[key]||[]).filter(m=>msgForMe(m,uid));if(!i)return all;
   const mm=i.members.find(m=>m.uid===uid);if(!mm)return [];const since=(mm.joinedAt||0)-500;
   return all.filter(m=>m.ts>=since);}
 function chatListHtml(){
@@ -1724,11 +1727,11 @@ function chatProactive(key){const c=chatCtx(key);if(!c||!c.seeds.length||c.i.can
   let plan=[];
   if(!fl[stKey]){fl[stKey]=1;if(!(recentHost&&c.hostSeed&&(stKey==='d-today'||stKey==='m1t')))plan=stageLines(c);}
   if(!plan.length&&(!lastSeed||now-lastSeed.ts>20*60000)&&Math.random()<.6)plan=smallTalk(c);
-  save();if(plan.length)runPlan(key,plan,1200+rand(900));}
-function runPlan(key,plan,wait){plan.forEach((p,idx)=>{PLAN_Q=PLAN_Q.then(()=>new Promise(res=>{
+  save();if(plan.length)runPlan(key,plan,1200+rand(900),c.u.id);}
+function runPlan(key,plan,wait,own){plan.forEach((p,idx)=>{PLAN_Q=PLAN_Q.then(()=>new Promise(res=>{
   setTimeout(()=>{TYPING[key]=p.uid;if(CHAT.key===key&&SH.kind==='chat')chatPaint(true);
     setTimeout(()=>{delete TYPING[key];const i=Srv.chatItem(key);
-      if(i&&!i.cancelled&&i.members.some(m=>m.uid===p.uid)&&Mod.check(p.text).ok){chatPush(key,p.uid,p.text);save();}
+      if(i&&!i.cancelled&&i.members.some(m=>m.uid===p.uid)&&Mod.check(p.text).ok){chatPush(key,p.uid,p.text,false,own);save();}
       if(CHAT.key===key&&SH.kind==='chat')chatPaint(true);res();},Math.min(3000,700+p.text.length*40));
   },idx===0?wait:400+rand(700));}));});}
 async function aiPlan(c,text){
@@ -1767,7 +1770,7 @@ async function chatRespond(key,text){try{const c=chatCtx(key);if(!c||!c.seeds.le
   let plan=null;
   if(SAMPLE&&CHAT.ai){TYPING[key]='_';if(CHAT.key===key)chatPaint(true);plan=await aiPlan(c,text);delete TYPING[key];}
   if(!plan)plan=rulePlan(text,c);
-  if(plan.length)runPlan(key,plan,plan===null?0:500+rand(700));else if(CHAT.key===key)chatPaint(true);}catch(e){delete TYPING[key];console.error(e);}}
+  if(plan.length)runPlan(key,plan,plan===null?0:500+rand(700),c.u.id);else if(CHAT.key===key)chatPaint(true);}catch(e){delete TYPING[key];console.error(e);}}
 A['msg-menu']=el=>{
   const [key]=[CHAT.key],mid=el.dataset.mid;const m=(S.chats[key]||[]).find(x=>x.id===mid);if(!m)return;const x=userById(m.uid);
   PREV.render=SH.render;PREV.kind=SH.kind;
